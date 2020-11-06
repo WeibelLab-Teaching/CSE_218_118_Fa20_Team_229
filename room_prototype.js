@@ -6,13 +6,20 @@
  * Description:
  * This program generates the scene, camera and its properties, 
  * and an empty rehearsal room with textures found on the internet.
- * I considered using a box, but I didn't understand how to use multiple
- * textures for a single side of a box. I will try and figure that
- * out at a later time. As a result, players can clip through walls
+ * 
+ * I used 5 planes and 1 ground object to create this room. There is an
+ * unfortunate bug of being able to clip through walls for some reason
  * (especially around the corners). I haven't figured out a good way
  * to prevent this without creating a box. As a side note, the player
  * may use WASD to move. Collision has been applied and works.
  * Gravity is enabled, though it may not be necessary.
+ * 
+ * I didn't use a box to make the room because I didn't understand 
+ * how to use different textures for individual sides of a box. Another issue 
+ * is that textures are applied from outside the box, so they will look
+ * mirrored to the player since they are looking from inside the box.
+ * I may try to solve these issues later, but right now it looks like
+ * it is more trouble than it is worth.
  */
 
 var createScene = function () {
