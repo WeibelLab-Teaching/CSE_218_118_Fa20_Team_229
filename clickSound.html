@@ -46,13 +46,15 @@
 
             camera.useAutoRotationBehavior = true;
 
-            var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+            // var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+            var light = new BABYLON.PointLight("omni", new BABYLON.Vector3(50, 0, 0), scene);
+            // light.diffuse = BABYLON.Color3(1, 1, 1);
 
             var box = BABYLON.Mesh.CreateBox("box", 3.0, scene);
             mat = new BABYLON.StandardMaterial("ground", scene);
             mat.diffuseColor = new BABYLON.Color3.White();
             mat.specularColor = new BABYLON.Color3.White();
-            mat.emissiveColor = BABYLON.Color3.Black();
+            mat.emissiveColor = BABYLON.Color3.Green();
             box.material = mat;
 
             box.actionManager = new BABYLON.ActionManager(scene);
@@ -77,7 +79,7 @@
                 BABYLON.ActionManager.OnPickUpTrigger, 
                 box.material, 
                 "emissiveColor", 
-                BABYLON.Color3.Black()
+                BABYLON.Color3.Green()
             ));
 
             return scene;
