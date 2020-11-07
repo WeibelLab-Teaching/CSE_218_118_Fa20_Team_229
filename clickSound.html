@@ -38,7 +38,47 @@
             var scene = new BABYLON.Scene(engine);
 
             var camera = new BABYLON.ArcRotateCamera("Camera", 3 * Math.PI / 2, Math.PI / 8, 50, BABYLON.Vector3.Zero(), scene);
-            
+
+            class pianoKey {
+                box;
+                constructor(scene, originalColor, pressColor, x, y, z, h, w, d) {
+                    box = BABYLON.MeshBuilder.CreateBox("box", {height: h, width: w, depth: d}, scene);
+                    box.position = new BABYLON.Vector3(x, y, z);
+                    var mat = new BABYLON.StandardMaterial("ground", scene);
+                    mat.diffuseColor = new BABYLON.Color3.White();
+                    mat.specularColor = new BABYLON.Color3.White();
+                    mat.emissiveColor = originalColor;
+                    box.material = mat;
+
+                    box.actionManager = new BABYLON.ActionManager(scene);
+
+                    var gunshot = new BABYLON.Sound("gunshot", "sounds/gunshot.wav", scene); // Add your own link of the sound!!!
+
+                    box.actionManager.registerAction(
+                        new BABYLON.ExecuteCodeAction(
+                        {
+                            trigger: BABYLON.ActionManager.OnPickDownTrigger
+                        },
+                        function () { 
+                            gunshot.play(); 
+                            console.log("click!"); 
+                        })
+                    );
+                    box.actionManager.registerAction(new BABYLON.SetValueAction(
+                        BABYLON.ActionManager.OnPickDownTrigger, 
+                        box.material, 
+                        "emissiveColor", 
+                        pressColor
+                    ))
+                    box.actionManager.registerAction(new BABYLON.SetValueAction(
+                        BABYLON.ActionManager.OnPickUpTrigger, 
+                        box.material, 
+                        "emissiveColor", 
+                        originalColor
+                    ));
+                }
+            }
+
             camera.attachControl(canvas, true);
 
             camera.lowerRadiusLimit = 6;
@@ -50,37 +90,7 @@
             var light = new BABYLON.PointLight("omni", new BABYLON.Vector3(50, 0, 0), scene);
             // light.diffuse = BABYLON.Color3(1, 1, 1);
 
-            var box = BABYLON.Mesh.CreateBox("box", 3.0, scene);
-            mat = new BABYLON.StandardMaterial("ground", scene);
-            mat.diffuseColor = new BABYLON.Color3.White();
-            mat.specularColor = new BABYLON.Color3.White();
-            mat.emissiveColor = BABYLON.Color3.Green();
-            box.material = mat;
-
-            box.actionManager = new BABYLON.ActionManager(scene);
-
-            var gunshot = new BABYLON.Sound("gunshot", "sounds/gunshot.wav", scene); // Add your own link of the sound!!!
-
-            box.actionManager.registerAction( new BABYLON.CombineAction(BABYLON.ActionManager.OnLeftPickTrigger, [
-                new BABYLON.ExecuteCodeAction(
-                {
-                    trigger: BABYLON.ActionManager.NothingTrigger
-                },
-                function () { gunshot.play(); console.log("click!"); }
-                ),
-            ]));
-            box.actionManager.registerAction(new BABYLON.SetValueAction(
-                BABYLON.ActionManager.OnLeftPickTrigger, 
-                box.material, 
-                "emissiveColor", 
-                BABYLON.Color3.Red()
-            ))
-            box.actionManager.registerAction(new BABYLON.SetValueAction(
-                BABYLON.ActionManager.OnPickUpTrigger, 
-                box.material, 
-                "emissiveColor", 
-                BABYLON.Color3.Green()
-            ));
+            var box = new pianoKey(scene, BABYLON.Color3.Green(), BABYLON.Color3.Red(), 0, -2, 0, 2, 4, 3);
 
             return scene;
         }
