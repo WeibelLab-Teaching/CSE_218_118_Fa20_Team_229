@@ -46,23 +46,41 @@
 
             camera.useAutoRotationBehavior = true;
 
-            var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+            // var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+            var light = new BABYLON.PointLight("omni", new BABYLON.Vector3(50, 0, 0), scene);
+            // light.diffuse = BABYLON.Color3(1, 1, 1);
 
             var box = BABYLON.Mesh.CreateBox("box", 3.0, scene);
-            
+            mat = new BABYLON.StandardMaterial("ground", scene);
+            mat.diffuseColor = new BABYLON.Color3.White();
+            mat.specularColor = new BABYLON.Color3.White();
+            mat.emissiveColor = BABYLON.Color3.Green();
+            box.material = mat;
+
             box.actionManager = new BABYLON.ActionManager(scene);
 
             var gunshot = new BABYLON.Sound("gunshot", "sounds/gunshot.wav", scene); // Add your own link of the sound!!!
 
-            
-
-            box.actionManager.registerAction( new BABYLON.ExecuteCodeAction(
+            box.actionManager.registerAction( new BABYLON.CombineAction(BABYLON.ActionManager.OnLeftPickTrigger, [
+                new BABYLON.ExecuteCodeAction(
                 {
-                    trigger: BABYLON.ActionManager.OnLeftPickTrigger
+                    trigger: BABYLON.ActionManager.NothingTrigger
                 },
-                function () { gunshot.play(); }
-                )
-            );
+                function () { gunshot.play(); console.log("click!"); }
+                ),
+            ]));
+            box.actionManager.registerAction(new BABYLON.SetValueAction(
+                BABYLON.ActionManager.OnLeftPickTrigger, 
+                box.material, 
+                "emissiveColor", 
+                BABYLON.Color3.Red()
+            ))
+            box.actionManager.registerAction(new BABYLON.SetValueAction(
+                BABYLON.ActionManager.OnPickUpTrigger, 
+                box.material, 
+                "emissiveColor", 
+                BABYLON.Color3.Green()
+            ));
 
             return scene;
         }
