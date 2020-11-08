@@ -42,7 +42,7 @@
             class pianoKey {
                 box;
                 constructor(scene, originalColor, pressColor, x, y, z, h, w, d, soundLink) {
-                    box = BABYLON.MeshBuilder.CreateBox("box", {height: h, width: w, depth: d}, scene);
+                    var box = BABYLON.MeshBuilder.CreateBox("box", {height: h, width: w, depth: d}, scene);
                     box.position = new BABYLON.Vector3(x, y, z);
                     var mat = new BABYLON.StandardMaterial("ground", scene);
                     mat.diffuseColor = new BABYLON.Color3.White();
@@ -85,32 +85,61 @@
             // camera.upperRadiusLimit = 20;
 
             // camera.useAutoRotationBehavior = true;
-            
-            var piano = BABYLON.SceneLoader.ImportMesh("", "", "untitled.obj", scene, function (newMeshes) {
-                // Set the target of the camera to the first imported mesh
-                for(var id in newMeshes) {
-                    var mesh = newMeshes[id];
-                    var mat = new BABYLON.StandardMaterial("piano", scene);
-                    // mat.diffuseColor = new BABYLON.Color3.White();
-                    // mat.specularColor = new BABYLON.Color3.White();
-                    // mat.emissiveColor = new BABYLON.Color3.Green();
-                    mesh.material = mat;
-                    mesh.scaling = new BABYLON.Vector3(2,2,2);
-                    console.log(mesh.position);
-                    mesh.position = new BABYLON.Vector3(3,3,0);
+
+            class piano {
+                pianoFrame;
+                constructor(x, y, z, scene) {
+                    var pianoFrame = BABYLON.SceneLoader.ImportMesh("", "", "untitled.obj", scene, function (newMeshes) {
+                        // Set the target of the camera to the first imported mesh
+                        for(var id in newMeshes) {
+                            var mesh = newMeshes[id];
+                            var mat = new BABYLON.StandardMaterial("piano", scene);
+                            // mat.diffuseColor = new BABYLON.Color3.White();
+                            // mat.specularColor = new BABYLON.Color3.White();
+                            // mat.emissiveColor = new BABYLON.Color3.Green();
+                            mesh.material = mat;
+                            mesh.scaling = new BABYLON.Vector3(2,2,2);
+                            // console.log(mesh.position);
+                            mesh.position = new BABYLON.Vector3(x, y, z);
+                        }
+                    });
+                    
+                    var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+                    //var light = new BABYLON.PointLight("hemi", new BABYLON.Vector3(50, 0, 0), scene);
+                    light.diffuse = BABYLON.Color3.Green();
+
+                    for(var i = -13.5; i <= 13.5; i++) {
+                        var box = new pianoKey(scene, BABYLON.Color3.Blue(), BABYLON.Color3.Red(), 3.4 + x, 1 + y, i + z, 1, 6, 0.9, "sounds/gunshot.wav");
+                    }
+
                 }
-            });
-
-            // piano.position = new BABYLON.Vector3(3,3,3);
-
-            var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
-            //var light = new BABYLON.PointLight("hemi", new BABYLON.Vector3(50, 0, 0), scene);
-            light.diffuse = BABYLON.Color3.Green();
-
-            // var box = new pianoKey(scene, BABYLON.Color3.Green(), BABYLON.Color3.Red(), 6, 4, 18, 1, 7, 1, "sounds/gunshot.wav");
-            for(i = -13.5; i <= 13.5; i++) {
-                var box = new pianoKey(scene, BABYLON.Color3.Blue(), BABYLON.Color3.Red(), 6.4, 4, i, 1, 6, 0.9, "sounds/gunshot.wav");
             }
+
+            var pianoSample = new piano(0, -3, 0, scene);
+            
+            // var pianoFrame = BABYLON.SceneLoader.ImportMesh("", "", "untitled.obj", scene, function (newMeshes) {
+            //     // Set the target of the camera to the first imported mesh
+            //     for(var id in newMeshes) {
+            //         var mesh = newMeshes[id];
+            //         var mat = new BABYLON.StandardMaterial("piano", scene);
+            //         // mat.diffuseColor = new BABYLON.Color3.White();
+            //         // mat.specularColor = new BABYLON.Color3.White();
+            //         // mat.emissiveColor = new BABYLON.Color3.Green();
+            //         mesh.material = mat;
+            //         mesh.scaling = new BABYLON.Vector3(2,2,2);
+            //         console.log(mesh.position);
+            //         mesh.position = new BABYLON.Vector3(3,3,0);
+            //     }
+            // });
+
+            // var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+            // //var light = new BABYLON.PointLight("hemi", new BABYLON.Vector3(50, 0, 0), scene);
+            // light.diffuse = BABYLON.Color3.Green();
+
+            // // var box = new pianoKey(scene, BABYLON.Color3.Green(), BABYLON.Color3.Red(), 6, 4, 18, 1, 7, 1, "sounds/gunshot.wav");
+            // for(i = -13.5; i <= 13.5; i++) {
+            //     var box = new pianoKey(scene, BABYLON.Color3.Blue(), BABYLON.Color3.Red(), 6.4, 4, i, 1, 6, 0.9, "sounds/gunshot.wav");
+            // }
 
             return scene;
         }
