@@ -24,6 +24,20 @@
         <script src="https://preview.babylonjs.com/babylon.js"></script>
         <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
         <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+
+        <script src="./inc/shim/Base64.js" type="text/javascript"></script>
+        <script src="./inc/shim/Base64binary.js" type="text/javascript"></script>
+        <script src="./inc/shim/WebAudioAPI.js" type="text/javascript"></script>
+        <!-- midi.js package -->
+        <script src="./js/midi/audioDetect.js" type="text/javascript"></script>
+        <script src="./js/midi/gm.js" type="text/javascript"></script>
+        <script src="./js/midi/loader.js" type="text/javascript"></script>
+        <script src="./js/midi/plugin.audiotag.js" type="text/javascript"></script>
+        <script src="./js/midi/plugin.webaudio.js" type="text/javascript"></script>
+        <script src="./js/midi/plugin.webmidi.js" type="text/javascript"></script>
+        <!-- utils -->
+        <script src="../js/util/dom_request_xhr.js" type="text/javascript"></script>
+        <script src="../js/util/dom_request_script.js" type="text/javascript"></script>
     </head>
 
    <body>
@@ -36,33 +50,141 @@
 
         var createScene = function () {
             var scene = new BABYLON.Scene(engine);
-
             var camera = new BABYLON.ArcRotateCamera("Camera", 3 * Math.PI / 2, Math.PI / 8, 50, BABYLON.Vector3.Zero(), scene);
-            
+            scene.actionManager = new BABYLON.ActionManager(scene);
+
+            class pianoKey {
+                box;
+                setKeyAction(triggerKey, changeKey, soundTrigger, pressTrigger, upTrigger, pressColor, originalColor, keyNumber) {
+                    triggerKey.actionManager.registerAction(
+                                new BABYLON.ExecuteCodeAction(
+                                soundTrigger,
+                                function () { 
+                                    // sound.play(); 
+                                    MIDI.loadPlugin({
+                                        soundfontUrl: "./soundfont/",
+                                        instrument: "acoustic_grand_piano",
+                                        onprogress: function(state, progress) {
+                                            console.log(state, progress);
+                                        },
+                                        onsuccess: function() {
+                                            var delay = 0; // play one note every quarter second
+                                            var note = 50+keyNumber; // the MIDI note
+                                            var velocity = 127; // how hard the note hits
+                                            // play the note
+                                            MIDI.setVolume(0, 127);
+                                            MIDI.noteOn(0, note, velocity, delay);
+                                            MIDI.noteOff(0, note, delay + 0.75);
+                                        }
+	                                });
+                                    console.log("click!"); 
+                                })
+                    );
+                    triggerKey.actionManager.registerAction(new BABYLON.SetValueAction(
+                                pressTrigger, 
+                                changeKey.material, 
+                                "emissiveColor", 
+                                pressColor
+                    ));
+                    triggerKey.actionManager.registerAction(new BABYLON.SetValueAction(
+                                upTrigger, 
+                                changeKey.material, 
+                                "emissiveColor", 
+                                originalColor
+                    ));
+                }
+                constructor(scene, originalColor, pressColor, x, y, z, h, w, d, soundLink, keyNumber) {
+                    var box = BABYLON.MeshBuilder.CreateBox("box", {height: h, width: w, depth: d}, scene);
+                    box.position = new BABYLON.Vector3(x, y, z);
+                    var mat = new BABYLON.StandardMaterial("ground", scene);
+                    mat.diffuseColor = new BABYLON.Color3.White();
+                    mat.specularColor = new BABYLON.Color3.White();
+                    mat.emissiveColor = originalColor;
+                    box.material = mat;
+
+                    box.actionManager = new BABYLON.ActionManager(scene);
+                    var keyboard = ['a', 's', 'd', 'f', 'g','h','j','k','l','q','w','e','r','t','y','u','i','o','p','1','2','3','4','5','6','7','8','9','0']
+                    var sound = new BABYLON.Sound("gunshot", soundLink, scene); 
+                    this.setKeyAction(box, box, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickUpTrigger, pressColor, originalColor, keyNumber);
+                    this.setKeyAction(scene, box, { trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: keyboard[keyNumber] }, 
+                    { trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: keyboard[keyNumber] }, { trigger: BABYLON.ActionManager.OnKeyUpTrigger, parameter: keyboard[keyNumber] }, pressColor, originalColor, keyNumber);
+                    
+                }
+            }
+
             camera.attachControl(canvas, true);
 
-            camera.lowerRadiusLimit = 6;
-            camera.upperRadiusLimit = 20;
+            // camera.lowerRadiusLimit = 6;
+            // camera.upperRadiusLimit = 20;
 
-            camera.useAutoRotationBehavior = true;
+            // camera.useAutoRotationBehavior = true;
 
-            var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+            class piano {
+                pianoFrame;
+                constructor(x, y, z, scene) {
+                    var pianoFrame = BABYLON.SceneLoader.ImportMesh("", "", "untitled.obj", scene, function (newMeshes) {
+                        // Set the target of the camera to the first imported mesh
+                        for(var id in newMeshes) {
+                            var mesh = newMeshes[id];
+                            var mat = new BABYLON.StandardMaterial("piano", scene);
+                            // mat.diffuseColor = new BABYLON.Color3.White();
+                            // mat.specularColor = new BABYLON.Color3.White();
+                            // mat.emissiveColor = new BABYLON.Color3.Green();
+                            mesh.material = mat;
+                            mesh.scaling = new BABYLON.Vector3(2,4,2);
+                            mesh.position = new BABYLON.Vector3(x, y, z);
+                        }
+                    });
+                    var pianoStand = BABYLON.SceneLoader.ImportMesh("", "", "stand.obj", scene, function (newMeshes) {
+                        // Set the target of the camera to the first imported mesh
+                        for(var id in newMeshes) {
+                            var mesh = newMeshes[id];
+                            var mat = new BABYLON.StandardMaterial("stand", scene);
+                            // mat.diffuseColor = new BABYLON.Color3.White();
+                            // mat.specularColor = new BABYLON.Color3.White();
+                            // mat.emissiveColor = new BABYLON.Color3.Green();
+                            mesh.material = mat;
+                            mesh.scaling = new BABYLON.Vector3(2,2,2);
+                            mesh.position = new BABYLON.Vector3(x, y, z);
+                        }
+                    });
+                    
+                    var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+                    //var light = new BABYLON.PointLight("hemi", new BABYLON.Vector3(50, 0, 0), scene);
+                    light.diffuse = BABYLON.Color3.Green();
 
-            var box = BABYLON.Mesh.CreateBox("box", 3.0, scene);
+                    for(var i = -13.5; i <= 13.5; i++) {
+                        var key = new pianoKey(scene, BABYLON.Color3.Blue(), BABYLON.Color3.Red(), 3.4 + x, 1 + y, i + z, 1, 6, 0.9, "sounds/gunshot.wav", i + 13.5);
+                    }
+
+                }
+            }
+
+            var pianoSample = new piano(0, -3, 0, scene);
             
-            box.actionManager = new BABYLON.ActionManager(scene);
+            // var pianoFrame = BABYLON.SceneLoader.ImportMesh("", "", "untitled.obj", scene, function (newMeshes) {
+            //     // Set the target of the camera to the first imported mesh
+            //     for(var id in newMeshes) {
+            //         var mesh = newMeshes[id];
+            //         var mat = new BABYLON.StandardMaterial("piano", scene);
+            //         // mat.diffuseColor = new BABYLON.Color3.White();
+            //         // mat.specularColor = new BABYLON.Color3.White();
+            //         // mat.emissiveColor = new BABYLON.Color3.Green();
+            //         mesh.material = mat;
+            //         mesh.scaling = new BABYLON.Vector3(2,2,2);
+            //         console.log(mesh.position);
+            //         mesh.position = new BABYLON.Vector3(3,3,0);
+            //     }
+            // });
 
-            var gunshot = new BABYLON.Sound("gunshot", "sounds/gunshot.wav", scene); // Add your own link of the sound!!!
+            // var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+            // //var light = new BABYLON.PointLight("hemi", new BABYLON.Vector3(50, 0, 0), scene);
+            // light.diffuse = BABYLON.Color3.Green();
 
-            
-
-            box.actionManager.registerAction( new BABYLON.ExecuteCodeAction(
-                {
-                    trigger: BABYLON.ActionManager.OnLeftPickTrigger
-                },
-                function () { gunshot.play(); }
-                )
-            );
+            // // var box = new pianoKey(scene, BABYLON.Color3.Green(), BABYLON.Color3.Red(), 6, 4, 18, 1, 7, 1, "sounds/gunshot.wav");
+            // for(i = -13.5; i <= 13.5; i++) {
+            //     var box = new pianoKey(scene, BABYLON.Color3.Blue(), BABYLON.Color3.Red(), 6.4, 4, i, 1, 6, 0.9, "sounds/gunshot.wav");
+            // }
 
             return scene;
         }
