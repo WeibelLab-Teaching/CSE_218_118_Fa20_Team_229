@@ -53,6 +53,15 @@
             // var camera = new BABYLON.ArcRotateCamera("Camera", 3 * Math.PI / 2, Math.PI / 8, 50, BABYLON.Vector3.Zero(), scene);
             const PLAYER_HEIGHT = 15;
             var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 2*PLAYER_HEIGHT, 0), scene);
+            camera.attachControl(canvas, true);
+
+            // // Move camera using keyboard
+            // camera.keysUp.push(37); // w
+            // camera.keysLeft.push(38); // a
+            // camera.keysDown.push(39); // s
+            // camera.keysRight.push(40); // d
+            camera.speed = 1.5;
+
             scene.actionManager = new BABYLON.ActionManager(scene);
 
             class pianoKey {
