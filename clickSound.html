@@ -51,9 +51,20 @@
         var createScene = function () {
             var scene = new BABYLON.Scene(engine);
             // var camera = new BABYLON.ArcRotateCamera("Camera", 3 * Math.PI / 2, Math.PI / 8, 50, BABYLON.Vector3.Zero(), scene);
+
+            scene.gravity = new BABYLON.Vector3(0, -1, 0);
+            scene.collisionsEnabled = true;
+            
             const PLAYER_HEIGHT = 15;
             var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 2*PLAYER_HEIGHT, 0), scene);
             camera.attachControl(canvas, true);
+
+            camera.applyGravity = true; 
+            camera.checkCollisions = true;
+
+            // Player camera
+            camera.setTarget(new BABYLON.Vector3(0, PLAYER_HEIGHT, 150)); // Look at the north wall
+            camera.ellipsoid = new BABYLON.Vector3(1, PLAYER_HEIGHT, 1);
 
             // // Move camera using keyboard
             // camera.keysUp.push(37); // w
