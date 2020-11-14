@@ -25,16 +25,16 @@
         <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
         <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
 
-        <script src="./inc/shim/Base64.js" type="text/javascript"></script>
-        <script src="./inc/shim/Base64binary.js" type="text/javascript"></script>
-        <script src="./inc/shim/WebAudioAPI.js" type="text/javascript"></script>
+        <script src="./midiJS/inc/shim/Base64.js" type="text/javascript"></script>
+        <script src="./midiJS/inc/shim/Base64binary.js" type="text/javascript"></script>
+        <script src="./midiJS/inc/shim/WebAudioAPI.js" type="text/javascript"></script>
         <!-- midi.js package -->
-        <script src="./js/midi/audioDetect.js" type="text/javascript"></script>
-        <script src="./js/midi/gm.js" type="text/javascript"></script>
-        <script src="./js/midi/loader.js" type="text/javascript"></script>
-        <script src="./js/midi/plugin.audiotag.js" type="text/javascript"></script>
-        <script src="./js/midi/plugin.webaudio.js" type="text/javascript"></script>
-        <script src="./js/midi/plugin.webmidi.js" type="text/javascript"></script>
+        <script src="./midiJS/js/midi/audioDetect.js" type="text/javascript"></script>
+        <script src="./midiJS/js/midi/gm.js" type="text/javascript"></script>
+        <script src="./midiJS/js/midi/loader.js" type="text/javascript"></script>
+        <script src="./midiJS/js/midi/plugin.audiotag.js" type="text/javascript"></script>
+        <script src="./midiJS/js/midi/plugin.webaudio.js" type="text/javascript"></script>
+        <script src="./midiJS/js/midi/plugin.webmidi.js" type="text/javascript"></script>
         <!-- utils -->
         <script src="../js/util/dom_request_xhr.js" type="text/javascript"></script>
         <script src="../js/util/dom_request_script.js" type="text/javascript"></script>
@@ -84,7 +84,7 @@
                                 function () { 
                                     // sound.play(); 
                                     MIDI.loadPlugin({
-                                        soundfontUrl: "./soundfont/",
+                                        soundfontUrl: "./midiJS/soundfont/",
                                         instrument: "acoustic_grand_piano",
                                         onprogress: function(state, progress) {
                                             console.log(state, progress);
@@ -99,7 +99,7 @@
                                             MIDI.noteOff(0, note, delay + 0.75);
                                         }
 	                                });
-                                    console.log("click!"); 
+                                    // console.log("click!"); 
                                 })
                     );
                     triggerKey.actionManager.registerAction(new BABYLON.SetValueAction(
@@ -115,21 +115,22 @@
                                 originalColor
                     ));
                 }
-                constructor(scene, originalColor, pressColor, x, y, z, h, w, d, soundLink, keyNumber) {
-                    var box = BABYLON.MeshBuilder.CreateBox("box", {height: h, width: w, depth: d}, scene);
-                    box.position = new BABYLON.Vector3(x, y, z);
+                constructor(scene, originalColor, pressColor, x, y, z, h, w, d, keyNumber) {
+                    this.box = BABYLON.MeshBuilder.CreateBox("box", {height: h, width: w, depth: d}, scene);
+                    this.box.position = new BABYLON.Vector3(x, y, z);
                     var mat = new BABYLON.StandardMaterial("ground", scene);
                     mat.diffuseColor = new BABYLON.Color3.White();
                     mat.specularColor = new BABYLON.Color3.White();
                     mat.emissiveColor = originalColor;
-                    box.material = mat;
+                    this.box.material = mat;
 
-                    box.actionManager = new BABYLON.ActionManager(scene);
-                    var keyboard = ['a', 's', 'd', 'f', 'g','h','j','k','l','q','w','e','r','t','y','u','i','o','p','1','2','3','4','5','6','7','8','9','0']
-                    var sound = new BABYLON.Sound("gunshot", soundLink, scene); 
-                    this.setKeyAction(box, box, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickUpTrigger, pressColor, originalColor, keyNumber);
-                    this.setKeyAction(scene, box, { trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: keyboard[keyNumber] }, 
-                    { trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: keyboard[keyNumber] }, { trigger: BABYLON.ActionManager.OnKeyUpTrigger, parameter: keyboard[keyNumber] }, pressColor, originalColor, keyNumber);
+                    this.box.actionManager = new BABYLON.ActionManager(scene);
+                    var keyboard = ['a', 's', 'd', 'f', 'g','h','j','k','l','q','w','e','r','t','y','u','i','o','p','1','2','3','4','5','6','7','8','9','0','z','x','c','v','b','n','m',',','.','/']
+                    this.setKeyAction(this.box, this.box, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickUpTrigger, pressColor, originalColor, keyNumber);
+                    if(keyNumber < keyboard.length) {
+                        this.setKeyAction(scene, this.box, { trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: keyboard[keyNumber] }, 
+                        { trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: keyboard[keyNumber] }, { trigger: BABYLON.ActionManager.OnKeyUpTrigger, parameter: keyboard[keyNumber] }, pressColor, originalColor, keyNumber);
+                    }
                 }
             }
 
@@ -142,8 +143,9 @@
 
             class piano {
                 pianoFrame;
+                keys = [];
                 constructor(x, y, z, scene) {
-                    var pianoFrame = BABYLON.SceneLoader.ImportMesh("", "", "untitled.obj", scene, function (newMeshes) {
+                    this.pianoFrame = BABYLON.SceneLoader.ImportMesh("", "", "./untitled.obj", scene, function (newMeshes) {
                         // Set the target of the camera to the first imported mesh
                         for(var id in newMeshes) {
                             var mesh = newMeshes[id];
@@ -156,7 +158,7 @@
                             mesh.position = new BABYLON.Vector3(x, y, z);
                         }
                     });
-                    var pianoStand = BABYLON.SceneLoader.ImportMesh("", "", "stand.obj", scene, function (newMeshes) {
+                    var pianoStand = BABYLON.SceneLoader.ImportMesh("", "", "./stand.obj", scene, function (newMeshes) {
                         // Set the target of the camera to the first imported mesh
                         for(var id in newMeshes) {
                             var mesh = newMeshes[id];
@@ -171,9 +173,12 @@
                     });
                     
                     
-
+                    var keyNumber = 0;
                     for(var i = -13.5; i <= 13.5; i++) {
-                        var key = new pianoKey(scene, BABYLON.Color3.Blue(), BABYLON.Color3.Red(), 3.4 + x, 1 + y, i + z, 1, 6, 0.9, "sounds/gunshot.wav", i + 13.5);
+                        if([1,2,4,5,6].includes((i+13.5) % 7)) {
+                            this.keys.push(new pianoKey(scene, BABYLON.Color3.Black(), BABYLON.Color3.Red(), 2.9 + x, 1.7 + y, i + z - 0.5, 0.5, 5, 0.6, keyNumber++).box);
+                        }
+                        this.keys.push(new pianoKey(scene, BABYLON.Color3.Blue(), BABYLON.Color3.Red(), 3.4 + x, 1 + y, i + z, 1, 6, 0.9, keyNumber++).box);
                     }
 
                 }
