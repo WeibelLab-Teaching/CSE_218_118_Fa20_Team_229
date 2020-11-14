@@ -145,7 +145,7 @@
                 pianoFrame;
                 keys = [];
                 constructor(x, y, z, scene) {
-                    this.pianoFrame = BABYLON.SceneLoader.ImportMesh("", "", "untitled.obj", scene, function (newMeshes) {
+                    this.pianoFrame = BABYLON.SceneLoader.ImportMesh("", "", "./pianoStand/untitled.obj", scene, function (newMeshes) {
                         // Set the target of the camera to the first imported mesh
                         for(var id in newMeshes) {
                             var mesh = newMeshes[id];
@@ -158,7 +158,7 @@
                             mesh.position = new BABYLON.Vector3(x, y, z);
                         }
                     });
-                    var pianoStand = BABYLON.SceneLoader.ImportMesh("", "", "stand.obj", scene, function (newMeshes) {
+                    var pianoStand = BABYLON.SceneLoader.ImportMesh("", "", "./pianoStand/stand.obj", scene, function (newMeshes) {
                         // Set the target of the camera to the first imported mesh
                         for(var id in newMeshes) {
                             var mesh = newMeshes[id];
@@ -176,7 +176,7 @@
                     var keyNumber = 0;
                     for(var i = -13.5; i <= 13.5; i++) {
                         if([1,2,4,5,6].includes((i+13.5) % 7)) {
-                            this.keys.push(new pianoKey(scene, BABYLON.Color3.Black(), BABYLON.Color3.Red(), 2.9 + x, 2 + y, i + z - 0.5, 0.5, 5, 0.6, keyNumber++).box);
+                            this.keys.push(new pianoKey(scene, BABYLON.Color3.Black(), BABYLON.Color3.Red(), 2.9 + x, 1.7 + y, i + z - 0.5, 0.5, 5, 0.6, keyNumber++).box);
                         }
                         this.keys.push(new pianoKey(scene, BABYLON.Color3.Blue(), BABYLON.Color3.Red(), 3.4 + x, 1 + y, i + z, 1, 6, 0.9, keyNumber++).box);
                     }
