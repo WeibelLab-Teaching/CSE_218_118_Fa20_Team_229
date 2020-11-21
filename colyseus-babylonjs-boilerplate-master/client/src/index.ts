@@ -1,7 +1,8 @@
 import "./index.css";
 
 import * as BABYLON from "babylonjs";
-import * as MIDI from "midi.js";
+import * as MIDI from "midicube";
+import 'babylonjs-loaders';
 import Keycode from "keycode.js";
 
 import { client } from "./game/network";
@@ -45,7 +46,7 @@ class pianoKey {
                     function () { 
                         // sound.play(); 
                         MIDI.loadPlugin({
-                            soundfontUrl: "../../../CSE_218_118_Fa20_Team_229/midiJS/soundfont/",
+                            soundfontUrl: "./soundfont/",
                             instrument: "acoustic_grand_piano",
                             onprogress: function(state, progress) {
                                 console.log(state, progress);
