@@ -59,9 +59,10 @@ class pianoKey {
                                 MIDI.setVolume(0, 127);
                                 MIDI.noteOn(0, note, velocity, delay);
                                 MIDI.noteOff(0, note, delay + 0.75);
+                                console.log("click!"); 
                             }
                         });
-                        // console.log("click!"); 
+                        gunshot.play();
                     })
         );
         triggerKey.actionManager.registerAction(new BABYLON.SetValueAction(
@@ -100,7 +101,7 @@ class piano {
     pianoFrame;
     keys = [];
     constructor(x, y, z, scene) {
-        this.pianoFrame = BABYLON.SceneLoader.ImportMesh("", "", "./src/untitled.obj", scene, function (newMeshes) {
+        this.pianoFrame = BABYLON.SceneLoader.ImportMesh("", "", "./untitled.obj", scene, function (newMeshes) {
             // Set the target of the camera to the first imported mesh
             for(var id in newMeshes) {
                 var mesh = newMeshes[id];
@@ -113,7 +114,7 @@ class piano {
                 mesh.position = new BABYLON.Vector3(x, y, z);
             }
         });
-        var pianoStand = BABYLON.SceneLoader.ImportMesh("", "", "./src/stand.obj", scene, function (newMeshes) {
+        var pianoStand = BABYLON.SceneLoader.ImportMesh("", "", "./stand.obj", scene, function (newMeshes) {
             // Set the target of the camera to the first imported mesh
             for(var id in newMeshes) {
                 var mesh = newMeshes[id];
@@ -146,9 +147,6 @@ var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), s
 light.intensity = 0.7;
 light.groundColor = new BABYLON.Color3(1, 1, 1);
 light.intensity = 0.7;
-
-
-scene.actionManager = new BABYLON.ActionManager(scene);
 
 const ROOM_X = 150;
 const ROOM_Y = 40;
@@ -298,11 +296,6 @@ client.joinOrCreate<StateHandler>("game").then(room => {
     const keyboard: PressedKeys = { x: 0, y: 0 };
     window.addEventListener("keydown", function(e) {
         // var cameraAngle = camera.cameraDirection.rotation;
-        console.log(camera.cameraDirection);
-        console.log(camera.cameraRotation);
-        console.log(camera.rotation);
-        console.log(camera.absoluteRotation);
-        console.log(camera.getTarget());
         if (e.which === Keycode.LEFT) {
             keyboard.x = -1;
         } else if (e.which === Keycode.RIGHT) {
@@ -338,3 +331,16 @@ client.joinOrCreate<StateHandler>("game").then(room => {
 engine.runRenderLoop(function() {
     scene.render();
 });
+var box = BABYLON.Mesh.CreateBox("box", 3.0, scene);
+
+box.actionManager = new BABYLON.ActionManager(scene);
+
+box.actionManager.registerAction( new BABYLON.ExecuteCodeAction(
+    {
+        trigger: BABYLON.ActionManager.OnLeftPickTrigger
+    },
+    function () { gunshot.play(); }
+    )
+);
+            
+var gunshot = new BABYLON.Sound("gunshot", "gunshot.wav", scene); // Add your own link of the sound!!!
