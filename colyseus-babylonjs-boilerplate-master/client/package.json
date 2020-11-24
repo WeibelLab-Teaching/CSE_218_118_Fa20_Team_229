@@ -29,6 +29,8 @@
     "colyseus.js": "^0.14.0",
     "earcut": "^2.1.3",
     "keycode.js": "^1.0.1",
-    "midicube": "^0.6.1"
+    "midicube": "^0.6.1",
+    "soundfont-player": "^0.12.0",
+    "typings": "^2.1.1"
   }
 }
