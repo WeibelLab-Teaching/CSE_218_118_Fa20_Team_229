@@ -10,7 +10,7 @@ import { client } from "./game/network";
 // Re-using server-side types for networking
 // This is optional, but highly recommended
 import { StateHandler } from "../../server/src/rooms/StateHandler";
-import { PressedKeys, Key } from "../../server/src/entities/Player";
+import { Coordinate, PressedKeys, Key } from "../../server/src/entities/Player";
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const engine = new BABYLON.Engine(canvas, true);
@@ -288,11 +288,9 @@ client.joinOrCreate<StateHandler>("game").then(room => {
     room.state.players.onAdd = function(player, key) {
         if (key === room.sessionId) {
             var pianoSample = new piano(0, 16, 0, scene, room);
-            player.position.y = 2*PLAYER_HEIGHT;
+            player.position.y = 2 * PLAYER_HEIGHT;
             camera.position.set(player.position.x, player.position.y, player.position.z);
         } else {
-
-            // Our built-in 'sphere' shape. Params: name, subdivs, size, scene
             playerViews[key] = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
 
             // Move the sphere upward 1/2 its height
@@ -336,32 +334,21 @@ client.joinOrCreate<StateHandler>("game").then(room => {
     });
 
     // Keyboard listeners
-    const keyboard: PressedKeys = { x: 0, y: 0 };
+    const keyboard: Coordinate = { x: 0, z: 0 };
     window.addEventListener("keydown", function(e) {
-        // var cameraAngle = camera.cameraDirection.rotation;
-        if (e.which === Keycode.LEFT) {
-            keyboard.x = -1;
-        } else if (e.which === Keycode.RIGHT) {
-            keyboard.x = 1;
-        } else if (e.which === Keycode.UP) {
-            keyboard.y = -1;
-        } else if (e.which === Keycode.DOWN) {
-            keyboard.y = 1;
+        if (e.which === Keycode.LEFT || e.which === Keycode.RIGHT || e.which === Keycode.UP || e.which === Keycode.DOWN) {
+            keyboard.x = camera.position.x;
+            keyboard.z = camera.position.z;
+            room.send('position', keyboard);
         }
-        room.send('key', keyboard);
     });
 
     window.addEventListener("keyup", function(e) {
-        if (e.which === Keycode.LEFT) {
-            keyboard.x = 0;
-        } else if (e.which === Keycode.RIGHT) {
-            keyboard.x = 0;
-        } else if (e.which === Keycode.UP) {
-            keyboard.y = 0;
-        } else if (e.which === Keycode.DOWN) {
-            keyboard.y = 0;
+        if (e.which === Keycode.LEFT || e.which === Keycode.RIGHT || e.which === Keycode.UP || e.which === Keycode.DOWN) {
+            keyboard.x = camera.position.x;
+            keyboard.z = camera.position.z;
+            room.send('position', keyboard);
         }
-        room.send('key', keyboard);
     });
 
     // Resize the engine on window resize
@@ -374,16 +361,5 @@ client.joinOrCreate<StateHandler>("game").then(room => {
 engine.runRenderLoop(function() {
     scene.render();
 });
-var box = BABYLON.Mesh.CreateBox("box", 3.0, scene);
-
-box.actionManager = new BABYLON.ActionManager(scene);
-
-box.actionManager.registerAction( new BABYLON.ExecuteCodeAction(
-    {
-        trigger: BABYLON.ActionManager.OnLeftPickTrigger
-    },
-    function () { gunshot.play(); }
-    )
-);
             
 var gunshot = new BABYLON.Sound("gunshot", "gunshot.wav", scene); // Add your own link of the sound!!!
