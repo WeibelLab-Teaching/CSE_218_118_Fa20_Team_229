@@ -10,7 +10,7 @@ import { client } from "./game/network";
 // Re-using server-side types for networking
 // This is optional, but highly recommended
 import { StateHandler } from "../../server/src/rooms/StateHandler";
-import { Coordinate} from "../../server/src/entities/Player";
+import { Coordinate, PressedKeys, Key } from "../../server/src/entities/Player";
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const engine = new BABYLON.Engine(canvas, true);
@@ -39,7 +39,7 @@ const PLAYER_HEIGHT = 15;
 
 class pianoKey {
     box;
-    setKeyAction(triggerKey, changeKey, soundTrigger, pressTrigger, upTrigger, pressColor, originalColor, keyNumber) {
+    setKeyAction(triggerKey, changeKey, soundTrigger, pressTrigger, upTrigger, pressColor, originalColor, keyNumber, room) {
         triggerKey.actionManager.registerAction(
                     new BABYLON.ExecuteCodeAction(
                     soundTrigger,
@@ -65,6 +65,29 @@ class pianoKey {
                         gunshot.play();
                     })
         );
+        const message = {noteNumber: keyNumber, ispressed: false, pressedBy: room.sessionId};
+        if (triggerKey == changeKey) {
+            triggerKey.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(
+                    pressTrigger,
+                    function () {
+                        message.ispressed = true;
+                        room.send('notes', message);
+                        console.log("sent");
+                    }
+                )
+            )
+            triggerKey.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(
+                    upTrigger,
+                    function () {
+                        message.ispressed = false;
+                        room.send('notes', message);
+                    }
+                )
+            )
+
+        }
         triggerKey.actionManager.registerAction(new BABYLON.SetValueAction(
                     pressTrigger, 
                     changeKey.material, 
@@ -78,7 +101,7 @@ class pianoKey {
                     originalColor
         ));
     }
-    constructor(scene, originalColor, pressColor, x, y, z, h, w, d, keyNumber) {
+    constructor(scene, originalColor, pressColor, x, y, z, h, w, d, keyNumber, room) {
         this.box = BABYLON.MeshBuilder.CreateBox("box", {height: h, width: w, depth: d}, scene);
         this.box.position = new BABYLON.Vector3(x, y, z);
         var mat = new BABYLON.StandardMaterial("ground", scene);
@@ -89,10 +112,10 @@ class pianoKey {
 
         this.box.actionManager = new BABYLON.ActionManager(scene);
         var keyboard = ['a', 's', 'd', 'f', 'g','h','j','k','l','q','w','e','r','t','y','u','i','o','p','1','2','3','4','5','6','7','8','9','0','z','x','c','v','b','n','m',',','.','/']
-        this.setKeyAction(this.box, this.box, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickUpTrigger, pressColor, originalColor, keyNumber);
+        this.setKeyAction(this.box, this.box, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickUpTrigger, pressColor, originalColor, keyNumber, room);
         if(keyNumber < keyboard.length) {
             this.setKeyAction(scene, this.box, { trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: keyboard[keyNumber] }, 
-            { trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: keyboard[keyNumber] }, { trigger: BABYLON.ActionManager.OnKeyUpTrigger, parameter: keyboard[keyNumber] }, pressColor, originalColor, keyNumber);
+            { trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: keyboard[keyNumber] }, { trigger: BABYLON.ActionManager.OnKeyUpTrigger, parameter: keyboard[keyNumber] }, pressColor, originalColor, keyNumber, room);
         }
     }
 }
@@ -100,7 +123,7 @@ class pianoKey {
 class piano {
     pianoFrame;
     keys = [];
-    constructor(x, y, z, scene) {
+    constructor(x, y, z, scene, room) {
         this.pianoFrame = BABYLON.SceneLoader.ImportMesh("", "", "./untitled.obj", scene, function (newMeshes) {
             // Set the target of the camera to the first imported mesh
             for(var id in newMeshes) {
@@ -132,15 +155,15 @@ class piano {
         var keyNumber = 0;
         for(var i = -13.5; i <= 13.5; i++) {
             if([1,2,4,5,6].includes((i+13.5) % 7)) {
-                this.keys.push(new pianoKey(scene, BABYLON.Color3.Black(), BABYLON.Color3.Red(), 2.9 + x, 1.7 + y, i + z - 0.5, 0.5, 5, 0.6, keyNumber++).box);
+                this.keys.push(new pianoKey(scene, BABYLON.Color3.Black(), BABYLON.Color3.Red(), 2.9 + x, 1.7 + y, i + z - 0.5, 0.5, 5, 0.6, keyNumber++, room).box);
             }
-            this.keys.push(new pianoKey(scene, BABYLON.Color3.Blue(), BABYLON.Color3.Red(), 3.4 + x, 1 + y, i + z, 1, 6, 0.9, keyNumber++).box);
+            this.keys.push(new pianoKey(scene, BABYLON.Color3.Blue(), BABYLON.Color3.Red(), 3.4 + x, 1 + y, i + z, 1, 6, 0.9, keyNumber++, room).box);
         }
 
     }
 }
 
-var pianoSample = new piano(0, 16, 0, scene);
+// var pianoSample = new piano(0, 16, 0, scene);
 
 var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
 
@@ -264,6 +287,7 @@ client.joinOrCreate<StateHandler>("game").then(room => {
 
     room.state.players.onAdd = function(player, key) {
         if (key === room.sessionId) {
+            var pianoSample = new piano(0, 16, 0, scene, room);
             player.position.y = 2 * PLAYER_HEIGHT;
             camera.position.set(player.position.x, player.position.y, player.position.z);
         } else {
@@ -277,6 +301,26 @@ client.joinOrCreate<StateHandler>("game").then(room => {
             player.position.onChange = () => {
                 playerViews[key].position.set(player.position.x, player.position.y, player.position.z);
             };
+            console.log("here");
+
+            const keys = [player.keyA1, player.keyA2, player.keyA3, player.keyA4,
+                player.keyA5, player.keyA6, player.keyA7, player.keyA8, player.keyA9, 
+                player.keyA10, player.keyA11, player.keyA12, player.keyB1, player.keyB2, player.keyB3, 
+                player.keyB4, player.keyB5, player.keyB6, player.keyB7, player.keyB8, 
+                player.keyB9, player.keyB10, player.keyB11, player.keyB12, player.keyC1, player.keyC2,
+                player.keyC3, player.keyC4, player.keyC5, player.keyC6, player.keyC7,
+                player.keyC8, player.keyC9, player.keyC10, player.keyC11, player.keyC12, player.keyD1, 
+                player.keyD2, player.keyD3, player.keyD4, player.keyD5, player.keyD6,
+                player.keyD7, player.keyD8, player.keyD9, player.keyD10, player.keyD11, player.keyD12]  
+            for(let i=0;i<keys.length;i++) {
+                keys[i].onChange = () => {
+                    if (keys[i].pressedBy != room.sessionId) {
+                        if (keys[i].ispressed) 
+                            console.log(String(i) + " is pressed");
+                        else console.log(String(i) + " is released!");
+                    }
+                }
+            }
         }
     };
 
