@@ -9,9 +9,8 @@ export class GameRoom extends Room<StateHandler> {
     onCreate (options) {
         this.setSimulationInterval(() => this.onUpdate());
         this.setState(new StateHandler());
-
-        this.onMessage("key", (client, message) => {
-            this.state.players.get(client.sessionId).pressedKeys = message;
+        this.onMessage("position", (client, message) => {
+            this.state.players.get(client.sessionId).newCoordinate = message;
         });
     }
 
@@ -27,8 +26,10 @@ export class GameRoom extends Room<StateHandler> {
 
     onUpdate () {
         this.state.players.forEach((player, sessionId) => {
-            player.position.x += player.pressedKeys.x * 0.1;
-            player.position.z -= player.pressedKeys.y * 0.1;
+            // player.position.x = player.pressedKeys.x;
+            // player.position.z = player.pressedKeys.y;
+            player.position.x = player.newCoordinate.x;
+            player.position.z = player.newCoordinate.z;
         });
     }
 
