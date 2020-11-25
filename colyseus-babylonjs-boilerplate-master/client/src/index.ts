@@ -20,6 +20,9 @@ scene.collisionsEnabled = true;
 
 const PLAYER_HEIGHT = 15;
 
+var Soundfont = require('soundfont-player')
+var audioContext = new AudioContext()
+
 class PianoKey {
     box;
     startingNote = 36;
@@ -28,11 +31,9 @@ class PianoKey {
                     new BABYLON.ExecuteCodeAction(
                     soundTrigger,
                     function () {
-                        var Soundfont = require('soundfont-player')
-                        var ac = new AudioContext()
-                        Soundfont.instrument(ac, 'marimba', { soundfont: 'MusyngKite' }).then(function (marimba) {
-                        marimba.play('C4')
-                        })
+                        Soundfont.instrument(audioContext, 'acoustic_grand_piano', { gain: 2 }).then(function (piano) {
+                            piano.play(50 + keyNumber).stop(audioContext.currentTime + 0.5);
+                        });
                     })
         );
         const message = {noteNumber: keyNumber, ispressed: false, pressedBy: room.sessionId};
