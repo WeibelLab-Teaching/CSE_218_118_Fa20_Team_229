@@ -3,7 +3,7 @@
 
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <title>Babylon Template</title>
+        <title>BandXR</title>
 
         <style>
             html, body {
@@ -235,14 +235,119 @@
             ceiling.rotate(BABYLON.Axis.X, Math.PI/2, BABYLON.Space.WORLD);
             // ceiling.checkCollisions = true;
 
+            //----------------whiteboard----------------------
             var white_board = BABYLON.MeshBuilder.CreatePlane("whiteboard",         
-                {width: (ROOM_X + 10)/ 8, height: (ROOM_Y + 10)/ 4, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);    
-            // white_board.parent = wall_W;
+                {width: (ROOM_X + 10)/ 10, height: (ROOM_Y + 10)/ 5, subdivisions: 25}, scene);    
+            white_board.parent = pianoSample.pianoFrame.Mesh;
             white_board.position.x = ROOM_X / 5 - 35;    
-            white_board.position.y = 30;
+            white_board.position.y = 25;
             white_board.position.z = 0;
             white_board.rotate(BABYLON.Axis.Y,  Math.PI * 1.5, BABYLON.Space.WORLD);
+            white_board.rotate(BABYLON.Axis.Z,  Math.PI * 0.2, BABYLON.Space.WORLD);
             white_board.checkCollisions = true;
+            
+            var board_mat = new BABYLON.StandardMaterial("sheet music", scene);
+            var texture = new BABYLON.DynamicTexture("dynamicTexture", 512, scene);
+            board_mat.diffuseTexture = texture;
+            white_board.material = board_mat;
+            var font = "bold 30px monospace";
+            texture.drawText("Upload you sheet music here", 20, 45, font, "grey", "white", true, true);
+            var context = texture.getContext();
+            var size = texture.getSize();
+
+            white_board.actionManager = new BABYLON.ActionManager(scene);
+            
+            
+            white_board.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction (
+                    {
+                        trigger: BABYLON.ActionManager.OnDoublePickTrigger
+                    },
+                    function() {
+                        var x;
+                        var pdf = prompt("Please enter your sheet music URL");
+                        if (pdf!=null){
+                            console.log("pdf not empty");
+                            //board_mat.diffuseTexture = new BABYLON.Texture(pdf, scene);
+                            
+                            var img = new Image();
+                            img.crossOrigin = "anonymous";
+                            img.src = pdf;
+                            img.onload = function() {
+                                console.log(img.width + " " + img.height + " " + white_board.width);
+                                context.drawImage(this, 0, 0, img.width, img.height, 0, 0, 520, 480);
+                                texture.update();
+                            }
+                            //board_mat.diffuseTexture = new BABYLON.Texture(        
+                            //    "https://i.imgur.com/AyZgq.png", scene);
+                        }
+                    }
+                )
+            );
+
+            var stable = false;
+            white_board.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction (
+                    {
+                        trigger: BABYLON.ActionManager.OnPickTrigger
+                    },
+                    function() {
+                        stable = true;
+                        console.log(camera.angularSensibility);
+                        camera.speed = 0;
+                        camera.angularSensibility = 10000000;
+                    }
+                )
+            )
+            .then(
+                new BABYLON.ExecuteCodeAction (
+                    {
+                        trigger: BABYLON.ActionManager.OnPickTrigger
+                    },
+                    function() {
+                        stable = false;
+                        camera.speed = 1.5;
+                        camera.angularSensibility = 2000;
+                    }
+                )
+            );
+            
+            
+            var draw = false;
+            var onPointerDown = function (eyt) {
+                draw = true;
+            };
+            var onPointerUp = function (eyt) {
+                draw = false;
+            }
+            var onPointerMove = function (eyt) {
+                if (draw && stable) {
+                    var pickResult = scene.pick(scene.pointerX, scene.pointerY);		
+                    var texcoords = pickResult.getTextureCoordinates();
+                    
+                    var centerX = texcoords.x * size.width;
+                    var centerY = size.height - texcoords.y * size.height;
+                    var radius = 1;
+
+                    // draw circle
+                    context.beginPath();
+                    context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+                    context.fillStyle = 'red';
+                    context.fill();
+                    context.lineWidth = 4;
+                    context.strokeStyle = 'red';
+                    context.stroke();
+
+                    texture.update(true);
+                }
+            };
+            var content = white_board.content;
+            canvas.addEventListener("pointerdown", onPointerDown, false);
+            canvas.addEventListener("pointerup", onPointerUp, false);
+            canvas.addEventListener("pointermove", onPointerMove, false);
+            
+
+            ////////////////whiteboard///////////////////////////
 
             /* Textures */
             var ground_mat = new BABYLON.StandardMaterial("wood floor", scene);
@@ -265,9 +370,6 @@
             ceiling_mat.diffuseTexture = new BABYLON.Texture(
                 "https://i.imgur.com/zVW0Lmk.png", scene);
 
-            var board_mat = new BABYLON.StandardMaterial("sheet music", scene);
-            board_mat.diffuseTexture = new BABYLON.Texture(        
-                "https://i.imgur.com/AyZgq.png", scene);
 
             /* Boundary Texture Selection */
             ground.material = ground_mat;
@@ -279,7 +381,6 @@
 
             /* Objects */
             // None at the moment
-            white_board.material = board_mat;
 
 
             return scene;
