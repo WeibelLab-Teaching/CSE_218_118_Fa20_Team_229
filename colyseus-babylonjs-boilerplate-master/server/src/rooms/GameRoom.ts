@@ -4,7 +4,7 @@ import { StateHandler } from "./StateHandler";
 import { Player } from "../entities/Player";
 
 export class GameRoom extends Room<StateHandler> {
-    maxClients = 8;
+    maxClients = 16;
 
     onCreate (options) {
         this.setSimulationInterval(() => this.onUpdate());

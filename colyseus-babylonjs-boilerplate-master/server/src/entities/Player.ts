@@ -19,8 +19,10 @@ export class Position extends Schema {
 export class Key extends Schema {
     @type("number") instrumentId: number = 0;
     @type("boolean") ispressed: boolean = false;
+    @type("boolean") ispressed2: boolean = false;
     @type("number") keyNumber: number = 0;
     @type("string") pressedBy: String = "";
+    @type("string") pressedBy2: String = "";
     constructor(kN) {
         super();
         this.keyNumber = kN;
@@ -78,6 +80,55 @@ export class Player extends Schema {
     @type(Key) keyD10 = new Key(45);
     @type(Key) keyD11 = new Key(46);
     @type(Key) keyD12 = new Key(47);
+    
+    // @type(Key) key2A1 = new Key(0);
+    // @type(Key) key2A2 = new Key(1);
+    // @type(Key) key2A3 = new Key(2);
+    // @type(Key) key2A4 = new Key(3);
+    // @type(Key) key2A5 = new Key(4);
+    // @type(Key) key2A6 = new Key(5);
+    // @type(Key) key2A7 = new Key(6);
+    // @type(Key) key2A8 = new Key(7);
+    // @type(Key) key2A9 = new Key(8);
+    // @type(Key) key2A10 = new Key(9);
+    // @type(Key) key2A11 = new Key(10);
+    // @type(Key) key2A12 = new Key(11);
+    // @type(Key) key2B1 = new Key(12);
+    // @type(Key) key2B2 = new Key(13);
+    // @type(Key) key2B3 = new Key(14);
+    // @type(Key) key2B4 = new Key(15);
+    // @type(Key) key2B5 = new Key(16);
+    // @type(Key) key2B6 = new Key(17);
+    // @type(Key) key2B7 = new Key(18);
+    // @type(Key) key2B8 = new Key(19);
+    // @type(Key) key2B9 = new Key(20);
+    // @type(Key) key2B10 = new Key(21);
+    // @type(Key) key2B11 = new Key(22);
+    // @type(Key) key2B12 = new Key(23);
+    // @type(Key) key2C1 = new Key(24);
+    // @type(Key) key2C2 = new Key(25);
+    // @type(Key) key2C3 = new Key(26);
+    // @type(Key) key2C4 = new Key(27);
+    // @type(Key) key2C5 = new Key(28);
+    // @type(Key) key2C6 = new Key(29);
+    // @type(Key) key2C7 = new Key(30);
+    // @type(Key) key2C8 = new Key(31);
+    // @type(Key) key2C9 = new Key(32);
+    // @type(Key) key2C10 = new Key(33);
+    // @type(Key) key2C11 = new Key(34);
+    // @type(Key) key2C12 = new Key(35);
+    // @type(Key) key2D1 = new Key(36);
+    // @type(Key) key2D2 = new Key(37);
+    // @type(Key) key2D3 = new Key(38);
+    // @type(Key) key2D4 = new Key(39);
+    // @type(Key) key2D5 = new Key(40);
+    // @type(Key) key2D6 = new Key(41);
+    // @type(Key) key2D7 = new Key(42);
+    // @type(Key) key2D8 = new Key(43);
+    // @type(Key) key2D9 = new Key(44);
+    // @type(Key) key2D10 = new Key(45);
+    // @type(Key) key2D11 = new Key(46);
+    // @type(Key) key2D12 = new Key(47);
     
 
     newCoordinate: Coordinate = { x: 0, z: 0 };

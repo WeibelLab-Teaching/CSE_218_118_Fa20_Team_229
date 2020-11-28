@@ -26,54 +26,61 @@ var audioContext = new AudioContext()
 class PianoKey {
     box;
     startingNote = 36;
-    setKeyAction(triggerKey, changeKey, soundTrigger, pressTrigger, upTrigger, pressColor, originalColor, keyNumber, startingNote, instrument, room) {
+    setKeyAction(triggerKey, changeKey, soundTrigger, pressTrigger, upTrigger, pressColor, originalColor, keyNumber, startingNote, instrument, room, camera) {
         triggerKey.actionManager.registerAction(
                     new BABYLON.ExecuteCodeAction(
                     soundTrigger,
                     function () {
-                        Soundfont.instrument(audioContext, 'acoustic_grand_piano', { gain: 2 }).then(function (piano) {
-                            piano.play(50 + keyNumber).stop(audioContext.currentTime + 0.5);
-                        });
+                        if (triggerKey == changeKey || (instrument == 'piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
+                            Soundfont.instrument(audioContext, 'acoustic_grand_piano', { gain: 2 }).then(function (piano) {
+                                piano.play(50 + keyNumber).stop(audioContext.currentTime + 0.5);
+                            });
+                        }
                     })
         );
         const message = {noteNumber: keyNumber, ispressed: false, pressedBy: room.sessionId};
-        if (triggerKey == changeKey) {
-            triggerKey.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(
-                    pressTrigger,
-                    function () {
+        
+        triggerKey.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(
+                pressTrigger,
+                function () {
+                    if (triggerKey == changeKey || (instrument == 'piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
+                        changeKey.material.emissiveColor = pressColor;
                         message.ispressed = true;
                         room.send('notes', message);
                         console.log("sent");
                     }
-                )
+                }
             )
-            triggerKey.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(
-                    upTrigger,
-                    function () {
+        )
+        triggerKey.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(
+                upTrigger,
+                function () {
+                    if (triggerKey == changeKey || (instrument == 'piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
+                        changeKey.material.emissiveColor = originalColor;
                         message.ispressed = false;
                         room.send('notes', message);
                     }
-                )
+                }
             )
-
-        }
-        triggerKey.actionManager.registerAction(new BABYLON.SetValueAction(
-                    pressTrigger, 
-                    changeKey.material, 
-                    "emissiveColor", 
-                    pressColor
-        ));
-        triggerKey.actionManager.registerAction(new BABYLON.SetValueAction(
-                    upTrigger, 
-                    changeKey.material, 
-                    "emissiveColor", 
-                    originalColor
-        ));
+        )
+            
+        // triggerKey.actionManager.registerAction(new BABYLON.SetValueAction(
+        //             pressTrigger, 
+        //             changeKey.material, 
+        //             "emissiveColor", 
+        //             pressColor
+        // ));
+        // triggerKey.actionManager.registerAction(new BABYLON.SetValueAction(
+        //             upTrigger, 
+        //             changeKey.material, 
+        //             "emissiveColor", 
+        //             originalColor
+        // ));
     }
 
-    constructor(scene, originalColor, pressColor, x, y, z, h, w, d, keyNumber, instrument, room) {
+    constructor(scene, originalColor, pressColor, x, y, z, h, w, d, keyNumber, instrument, room, camera) {
         this.box = BABYLON.MeshBuilder.CreateBox("box", {height: h, width: w, depth: d}, scene);
         this.box.position = new BABYLON.Vector3(x, y, z);
         var mat = new BABYLON.StandardMaterial("ground", scene);
@@ -84,10 +91,10 @@ class PianoKey {
 
         this.box.actionManager = new BABYLON.ActionManager(scene);
         var keyboard = ['a', 's', 'd', 'f', 'g','h','j','k','l','q','w','e','r','t','y','u','i','o','p','1','2','3','4','5','6','7','8','9','0','z','x','c','v','b','n','m',',','.','/']
-        this.setKeyAction(this.box, this.box, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickUpTrigger, pressColor, originalColor, keyNumber, this.startingNote, instrument, room);
+        this.setKeyAction(this.box, this.box, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickUpTrigger, pressColor, originalColor, keyNumber, this.startingNote, instrument, room, camera);
         if(keyNumber < keyboard.length) {
             this.setKeyAction(scene, this.box, { trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: keyboard[keyNumber] }, 
-                { trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: keyboard[keyNumber] }, { trigger: BABYLON.ActionManager.OnKeyUpTrigger, parameter: keyboard[keyNumber] }, pressColor, originalColor, keyNumber, this.startingNote, instrument, room);
+                { trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: keyboard[keyNumber] }, { trigger: BABYLON.ActionManager.OnKeyUpTrigger, parameter: keyboard[keyNumber] }, pressColor, originalColor, keyNumber, this.startingNote, instrument, room, camera);
         }
     }
 }
@@ -95,7 +102,7 @@ class PianoKey {
 class Piano {
     pianoFrame;
     keys = [];
-    constructor(x, y, z, scene, instrument, room) {
+    constructor(x, y, z, scene, instrument, room, camera) {
         this.pianoFrame = BABYLON.SceneLoader.ImportMesh("", "", "./untitled.obj", scene, function (newMeshes) {
             // Set the target of the camera to the first imported mesh
             for(var id in newMeshes) {
@@ -127,9 +134,9 @@ class Piano {
         var keyNumber = 0;
         for(var i = -13.5; i <= 13.5; i++) {
             if([1,2,4,5,6].includes((i+13.5) % 7)) {
-                this.keys.push(new PianoKey(scene, BABYLON.Color3.Black(), BABYLON.Color3.Red(), 2.9 + x, 1.7 + y, i + z - 0.5, 0.5, 5, 0.6, keyNumber++, instrument, room).box);
+                this.keys.push(new PianoKey(scene, BABYLON.Color3.Black(), BABYLON.Color3.Red(), 2.9 + x, 1.7 + y, i + z - 0.5, 0.5, 5, 0.6, keyNumber++, instrument, room, camera).box);
             }
-            this.keys.push(new PianoKey(scene, new BABYLON.Color3(0.8, 0.8, 0.8), BABYLON.Color3.Red(), 3.4 + x, 1 + y, i + z, 1, 6, 0.9, keyNumber++, instrument, room).box);
+            this.keys.push(new PianoKey(scene, new BABYLON.Color3(0.8, 0.8, 0.8), BABYLON.Color3.Red(), 3.4 + x, 1 + y, i + z, 1, 6, 0.9, keyNumber++, instrument, room, camera).box);
         }
 
     }
@@ -257,8 +264,8 @@ client.joinOrCreate<StateHandler>("game").then(room => {
 
     room.state.players.onAdd = function(player, key) {
         if (key === room.sessionId) {
-            var pianoSample1 = new Piano(25, 16, 35, scene, "celesta", room);
-            var pianoSample2 = new Piano(25, 16, -35, scene, "piano", room);
+            var pianoSample1 = new Piano(25, 16, 35, scene, "celesta", room, camera);
+            var pianoSample2 = new Piano(25, 16, -35, scene, "piano", room, camera);
             player.position.y = 2 * PLAYER_HEIGHT;
             camera.position.set(player.position.x, player.position.y, player.position.z);
         } else {
