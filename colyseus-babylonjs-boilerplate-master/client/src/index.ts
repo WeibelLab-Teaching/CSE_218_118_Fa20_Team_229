@@ -38,7 +38,7 @@ class PianoKey {
                         }
                     })
         );
-        const message = {noteNumber: keyNumber, ispressed: false, pressedBy: room.sessionId};
+        const message = {noteNumber: keyNumber, ispressed: false, pressedBy: room.sessionId, instrument: ""};
         
         triggerKey.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(
@@ -46,6 +46,7 @@ class PianoKey {
                 function () {
                     if (triggerKey == changeKey || (instrument == 'piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
                         changeKey.material.emissiveColor = pressColor;
+                        message.instrument = instrument;
                         message.ispressed = true;
                         room.send('notes', message);
                         console.log("sent");
@@ -59,6 +60,7 @@ class PianoKey {
                 function () {
                     if (triggerKey == changeKey || (instrument == 'piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
                         changeKey.material.emissiveColor = originalColor;
+                        message.instrument = instrument;
                         message.ispressed = false;
                         room.send('notes', message);
                     }
@@ -262,8 +264,15 @@ console.log("camera created!");
 client.joinOrCreate<StateHandler>("game").then(room => {
     const playerViews: {[id: string]: BABYLON.Mesh} = {};
 
+    const keyState = [];
+
+    for(let i=0;i<48;i++) {
+        keyState.push([false, false]);
+    }
+
     room.state.players.onAdd = function(player, key) {
         if (key === room.sessionId) {
+            // Don't change the position of piano before talking to Yuepeng!!
             var pianoSample1 = new Piano(25, 16, 35, scene, "celesta", room, camera);
             var pianoSample2 = new Piano(25, 16, -35, scene, "piano", room, camera);
             player.position.y = 2 * PLAYER_HEIGHT;
@@ -292,11 +301,29 @@ client.joinOrCreate<StateHandler>("game").then(room => {
                 player.keyD7, player.keyD8, player.keyD9, player.keyD10, player.keyD11, player.keyD12]  
             for(let i=0;i<keys.length;i++) {
                 keys[i].onChange = () => {
-                    if (keys[i].pressedBy != room.sessionId) {
-                        if (keys[i].ispressed) 
-                            console.log(String(i) + " is pressed");
-                        else console.log(String(i) + " is released!");
+                    // 0 is piano
+                    if (keyState[i][0] != keys[i].ispressed) {
+                        if (keys[i].pressedBy != room.sessionId) {
+                            if (keys[i].ispressed) 
+                                console.log(String(i) + " of piano is pressed");
+                            else console.log(String(i) + " of piano is released!");
+                        }
+                        keyState[i][0] = keys[i].ispressed
                     }
+                    // 1 is celesta
+                    if (keyState[i][1] != keys[i].ispressed2) {
+                        if (keys[i].pressedBy2 != room.sessionId) {
+                            if (keys[i].ispressed2) 
+                                console.log(String(i) + " of celesta is pressed");
+                            else console.log(String(i) + " of celesta is released!");
+                        }
+                        keyState[i][1] = keys[i].ispressed2
+                    }
+                    // if (keys[i].pressedBy != room.sessionId) {
+                    //     if (keys[i].ispressed) 
+                    //         console.log(String(i) + " is pressed");
+                    //     else console.log(String(i) + " is released!");
+                    // }
                 }
             }
         }

@@ -24,8 +24,13 @@ export class GameRoom extends Room<StateHandler> {
                     player.keyC8, player.keyC9, player.keyC10, player.keyC11, player.keyC12, player.keyD1, 
                     player.keyD2, player.keyD3, player.keyD4, player.keyD5, player.keyD6,
                     player.keyD7, player.keyD8, player.keyD9, player.keyD10, player.keyD11, player.keyD12]  
-                keys[message.noteNumber].ispressed = Boolean(message.ispressed);
-                keys[message.noteNumber].pressedBy = message.pressedBy;
+                if (message.instrument == 'piano') {
+                    keys[message.noteNumber].ispressed = Boolean(message.ispressed);
+                    keys[message.noteNumber].pressedBy = message.pressedBy;
+                } else if (message.instrument == 'celesta') {
+                    keys[message.noteNumber].ispressed2 = Boolean(message.ispressed);
+                    keys[message.noteNumber].pressedBy2 = message.pressedBy;
+                }
             });
         });
     }
