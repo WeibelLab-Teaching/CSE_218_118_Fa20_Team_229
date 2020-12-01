@@ -6,6 +6,7 @@ import Keycode from "keycode.js";
 import { client } from "./game/network";
 import { StateHandler } from "../../server/src/rooms/StateHandler";
 import { Coordinate } from "../../server/src/entities/Player";
+import { WhiteBoard } from "./whiteboard"
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const engine = new BABYLON.Engine(canvas, true);
@@ -192,15 +193,6 @@ ceiling.position.y = ROOM_Y;
 ceiling.rotate(BABYLON.Axis.X, Math.PI/2, BABYLON.Space.WORLD);
 // ceiling.checkCollisions = true;
 
-var white_board = BABYLON.MeshBuilder.CreatePlane("whiteboard",         
-{width: (ROOM_X + 10)/ 8, height: (ROOM_Y + 10)/ 4, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);    
-// white_board.parent = wall_W;
-white_board.position.x = ROOM_X / 5 - 35;    
-white_board.position.y = 30;
-white_board.position.z = 0;
-white_board.rotate(BABYLON.Axis.Y,  Math.PI * 1.5, BABYLON.Space.WORLD);
-white_board.checkCollisions = true;
-
 /* Textures */
 var ground_mat = new BABYLON.StandardMaterial("wood floor", scene);
 ground_mat.diffuseTexture = new BABYLON.Texture(
@@ -222,10 +214,6 @@ var ceiling_mat = new BABYLON.StandardMaterial("ceiling", scene);
 ceiling_mat.diffuseTexture = new BABYLON.Texture(
 "https://i.imgur.com/zVW0Lmk.png", scene);
 
-var board_mat = new BABYLON.StandardMaterial("sheet music", scene);
-board_mat.diffuseTexture = new BABYLON.Texture(        
-"https://i.imgur.com/AyZgq.png", scene);
-
 /* Boundary Texture Selection */
 ground.material = ground_mat;
 wall_N.material = window_mat;
@@ -236,7 +224,6 @@ ceiling.material = ceiling_mat;
 
 /* Objects */
 // None at the moment
-white_board.material = board_mat;
 
 // Attach default camera mouse navigation
 // camera.attachControl(canvas);
@@ -275,6 +262,7 @@ client.joinOrCreate<StateHandler>("game").then(room => {
             // Don't change the position of piano before talking to Yuepeng!!
             var pianoSample1 = new Piano(25, 16, 35, scene, "celesta", room, camera);
             var pianoSample2 = new Piano(25, 16, -35, scene, "piano", room, camera);
+            var whiteboard1 = new WhiteBoard((ROOM_X + 10)/ 10, (ROOM_Y + 10)/ 5, 25, 16, -35, scene, pianoSample1.pianoFrame.Mesh, camera, canvas);
             player.position.y = 2 * PLAYER_HEIGHT;
             camera.position.set(player.position.x, player.position.y, player.position.z);
         } else {
