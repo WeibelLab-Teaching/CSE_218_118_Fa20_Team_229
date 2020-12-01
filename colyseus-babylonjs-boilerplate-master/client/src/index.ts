@@ -36,6 +36,10 @@ camera.ellipsoid = new BABYLON.Vector3(1, PLAYER_HEIGHT, 1);
 camera.speed = 1.0;
 console.log("camera created!");
 
+var Soundfont = require('soundfont-player');
+var audioContext = new AudioContext();  
+var pianoSample1, pianoSample2;
+
 // Colyseus / Join Room
 client.joinOrCreate<StateHandler>("game").then(room => {
     const playerViews: {[id: string]: BABYLON.Mesh} = {};
@@ -52,8 +56,8 @@ client.joinOrCreate<StateHandler>("game").then(room => {
             const piano1x = 25, piano1y = 16, piano1z = 35;
             const piano2x = 25, piano2y = 16, piano2z = -35;
             var virtualRoom = new Room(scene); 
-            var pianoSample1 = new Piano(piano1x, piano1y, piano1z, scene, "celesta", room, camera);
-            var pianoSample2 = new Piano(piano2x, piano2y, piano2z, scene, "piano", room, camera);
+            pianoSample1 = new Piano(piano1x, piano1y, piano1z, scene, "celesta", room, camera);
+            pianoSample2 = new Piano(piano2x, piano2y, piano2z, scene, "piano", room, camera);
             var whiteboard1 = new WhiteBoard(16, 10, piano1x, piano1y,piano1z, scene, pianoSample1.pianoFrame.Mesh, camera, canvas);
             player.position.y = 2 * PLAYER_HEIGHT;
             camera.position.set(player.position.x, player.position.y, player.position.z);
@@ -84,26 +88,41 @@ client.joinOrCreate<StateHandler>("game").then(room => {
                     // 0 is piano
                     if (keyState[i][0] != keys[i].ispressed) {
                         if (keys[i].pressedBy != room.sessionId) {
-                            if (keys[i].ispressed) 
+                            if (keys[i].ispressed) {
                                 console.log(String(i) + " of piano is pressed");
-                            else console.log(String(i) + " of piano is released!");
+                                Soundfont.instrument(audioContext, 'acoustic_grand_piano', { gain: 2 }).then(function (piano) {
+                                    piano.play(50 + i).stop(audioContext.currentTime + 0.5);
+                                });
+                                pianoSample2.keys[i].material.emissiveColor = BABYLON.Color3.Red();
+                            }
+                            else {
+                                if([1,3,6,8,10].includes(i % 12)) {
+                                    pianoSample2.keys[i].material.emissiveColor = BABYLON.Color3.Black();
+                                } else pianoSample2.keys[i].material.emissiveColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+                                console.log(String(i) + " of piano is released!");
+                            }
                         }
-                        keyState[i][0] = keys[i].ispressed
+                        keyState[i][0] = keys[i].ispressed;
                     }
                     // 1 is celesta
                     if (keyState[i][1] != keys[i].ispressed2) {
                         if (keys[i].pressedBy2 != room.sessionId) {
-                            if (keys[i].ispressed2) 
+                            if (keys[i].ispressed2) {
                                 console.log(String(i) + " of celesta is pressed");
-                            else console.log(String(i) + " of celesta is released!");
+                                Soundfont.instrument(audioContext, 'acoustic_grand_piano', { gain: 2 }).then(function (piano) {
+                                    piano.play(50 + i).stop(audioContext.currentTime + 0.5);
+                                });
+                                pianoSample1.keys[i].material.emissiveColor = BABYLON.Color3.Red();
+                            }
+                            else {
+                                if([1,3,6,8,10].includes(i % 12)) {
+                                    pianoSample1.keys[i].material.emissiveColor = BABYLON.Color3.Black();
+                                } else pianoSample1.keys[i].material.emissiveColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+                                console.log(String(i) + " of celesta is released!");
+                            }
                         }
-                        keyState[i][1] = keys[i].ispressed2
+                        keyState[i][1] = keys[i].ispressed2;
                     }
-                    // if (keys[i].pressedBy != room.sessionId) {
-                    //     if (keys[i].ispressed) 
-                    //         console.log(String(i) + " is pressed");
-                    //     else console.log(String(i) + " is released!");
-                    // }
                 }
             }
         }
