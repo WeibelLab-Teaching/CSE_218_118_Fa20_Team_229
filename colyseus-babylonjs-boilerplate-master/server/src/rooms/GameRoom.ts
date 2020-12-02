@@ -29,7 +29,7 @@ export class GameRoom extends Room<StateHandler> {
                 if (message.instrument == 'acoustic_grand_piano') {
                     keys[message.noteNumber].ispressed = Boolean(message.ispressed);
                     keys[message.noteNumber].pressedBy = message.pressedBy;
-                } else if (message.instrument == 'celesta') {
+                } else if (message.instrument == 'koto') {
                     keys[message.noteNumber].ispressed2 = Boolean(message.ispressed);
                     keys[message.noteNumber].pressedBy2 = message.pressedBy;
                 }

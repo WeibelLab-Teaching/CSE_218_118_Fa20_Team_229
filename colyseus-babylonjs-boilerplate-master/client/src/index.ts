@@ -61,7 +61,7 @@ client.joinOrCreate<StateHandler>("game").then(room => {
             const piano1x = 25, piano1y = 16, piano1z = 35;
             const piano2x = 25, piano2y = 16, piano2z = -35;
             var virtualRoom = new Room(scene); 
-            pianoSample1 = new Piano(piano1x, piano1y, piano1z, scene, "celesta", room, camera);
+            pianoSample1 = new Piano(piano1x, piano1y, piano1z, scene, "koto", room, camera);
             pianoSample2 = new Piano(piano2x, piano2y, piano2z, scene, "acoustic_grand_piano", room, camera);
 
             drum = new Drum(30, 16, 0, scene, room, camera);
@@ -116,12 +116,12 @@ client.joinOrCreate<StateHandler>("game").then(room => {
                         }
                         keyState[i][0] = keys[i].ispressed;
                     }
-                    // 1 is celesta
+                    // 1 is koto
                     if (keyState[i][1] != keys[i].ispressed2) {
                         if (keys[i].pressedBy2 != room.sessionId) {
                             if (keys[i].ispressed2) {
-                                console.log(String(i) + " of celesta is pressed");
-                                Soundfont.instrument(audioContext, 'celesta', { gain: 2 }).then(function (piano) {
+                                console.log(String(i) + " of koto is pressed");
+                                Soundfont.instrument(audioContext, 'koto', { gain: 2 }).then(function (piano) {
                                     piano.play(STARTING_NOTE + i).stop(audioContext.currentTime + 0.5);
                                 });
                                 pianoSample1.keys[i].material.emissiveColor = BABYLON.Color3.Red();
@@ -130,7 +130,7 @@ client.joinOrCreate<StateHandler>("game").then(room => {
                                 if([1,3,6,8,10].includes(i % 12)) {
                                     pianoSample1.keys[i].material.emissiveColor = BABYLON.Color3.Black();
                                 } else pianoSample1.keys[i].material.emissiveColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-                                console.log(String(i) + " of celesta is released!");
+                                console.log(String(i) + " of koto is released!");
                             }
                         }
                         keyState[i][1] = keys[i].ispressed2;
