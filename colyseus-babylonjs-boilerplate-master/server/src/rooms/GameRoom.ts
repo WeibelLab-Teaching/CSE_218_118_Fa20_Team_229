@@ -12,7 +12,9 @@ export class GameRoom extends Room<StateHandler> {
         this.onMessage("position", (client, message) => {
             this.state.players.get(client.sessionId).newCoordinate = message;
         });
-
+        this.onMessage("rotation", (client, message) => {
+            this.state.players.get(client.sessionId).newRotation = message;
+        });
         this.onMessage("notes", (client, message) => {
             this.state.players.forEach((player, sessionId) => {
                 const keys = [player.keyA1, player.keyA2, player.keyA3, player.keyA4,
@@ -47,10 +49,12 @@ export class GameRoom extends Room<StateHandler> {
 
     onUpdate () {
         this.state.players.forEach((player, sessionId) => {
-            // player.position.x = player.pressedKeys.x;
-            // player.position.z = player.pressedKeys.y;
             player.position.x = player.newCoordinate.x;
             player.position.z = player.newCoordinate.z;
+
+            player.rotation.x = player.newRotation.x;
+            player.rotation.y = player.newRotation.y;
+            player.rotation.z = player.newRotation.z;
         });
     }
 
