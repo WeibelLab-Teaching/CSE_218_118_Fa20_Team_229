@@ -1,16 +1,18 @@
 import { Schema, type } from "@colyseus/schema";
 
-export interface PressedKeys {
-    x: number;
-    y: number;
-}
-
 export interface Coordinate {
     x: number;
+    y: number;
     z: number;
 }
 
 export class Position extends Schema {
+    @type("number") x: number = 0;
+    @type("number") y: number = 0;
+    @type("number") z: number = 0;
+}
+
+export class Rotation extends Schema {
     @type("number") x: number = 0;
     @type("number") y: number = 0;
     @type("number") z: number = 0;
@@ -32,6 +34,7 @@ export class Key extends Schema {
 export class Player extends Schema {
     @type("string") name: string;
     @type(Position) position = new Position();
+    @type(Rotation) rotation = new Rotation();
     @type(Key) keyA1 = new Key(0);
     @type(Key) keyA2 = new Key(1);
     @type(Key) keyA3 = new Key(2);
@@ -131,6 +134,6 @@ export class Player extends Schema {
     // @type(Key) key2D12 = new Key(47);
     
 
-    newCoordinate: Coordinate = { x: 0, z: 0 };
-    pressedKeys: PressedKeys = { x: 0, y: 0 };
+    newCoordinate: Coordinate = { x: 0, y: 0, z: 0 };
+    newRotation: Coordinate = { x: 0, y: 0, z: 0};
 }

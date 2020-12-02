@@ -9,6 +9,7 @@ import { Coordinate } from "../../server/src/entities/Player";
 import { WhiteBoard } from "./meshes/whiteboard";
 import { Piano } from "./meshes/piano";
 import { Room } from "./meshes/room";
+import { Rotate2dBlock } from "babylonjs";
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const engine = new BABYLON.Engine(canvas, true);
@@ -34,7 +35,8 @@ camera.checkCollisions = true;
 camera.setTarget(new BABYLON.Vector3(0, PLAYER_HEIGHT, 150)); // Look at the north wall
 camera.ellipsoid = new BABYLON.Vector3(1, PLAYER_HEIGHT, 1);
 camera.speed = 1.0;
-console.log("camera created!");
+
+var exbox = BABYLON.Mesh.CreateBox("box", 2, scene);
 
 // Colyseus / Join Room
 client.joinOrCreate<StateHandler>("game").then(room => {
@@ -58,15 +60,19 @@ client.joinOrCreate<StateHandler>("game").then(room => {
             player.position.y = 2 * PLAYER_HEIGHT;
             camera.position.set(player.position.x, player.position.y, player.position.z);
         } else {
-            playerViews[key] = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
+            // playerViews[key] = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
+            playerViews[key] = BABYLON.Mesh.CreateBox("box", 2, scene);
 
             // Move the sphere upward 1/2 its height
             player.position.y = 2*PLAYER_HEIGHT;
             playerViews[key].position.set(player.position.x, player.position.y, player.position.z);
-
+            playerViews[key].rotation.set(player.rotation.x, player.rotation.y, player.rotation.z);
             // Update player position based on changes from the server.
             player.position.onChange = () => {
                 playerViews[key].position.set(player.position.x, player.position.y, player.position.z);
+            };
+            player.rotation.onChange = () => {
+                playerViews[key].rotation.set(player.rotation.x, player.rotation.y, player.rotation.z);
             };
             console.log("here");
 
@@ -115,11 +121,11 @@ client.joinOrCreate<StateHandler>("game").then(room => {
     };
 
     room.onStateChange((state) => {
-        console.log("New room state:", state.toJSON());
+        console.log("New room state:", state.players.toJSON());
     });
 
-    // Keyboard listeners
-    const keyboard: Coordinate = { x: 0, z: 0 };
+    // Left Right Up Down keys -> user move around
+    const keyboard: Coordinate = { x: 0, y: 0, z: 0 };
     window.addEventListener("keydown", function(e) {
         if (e.which === Keycode.LEFT || e.which === Keycode.RIGHT || e.which === Keycode.UP || e.which === Keycode.DOWN) {
             keyboard.x = camera.position.x;
@@ -127,13 +133,35 @@ client.joinOrCreate<StateHandler>("game").then(room => {
             room.send('position', keyboard);
         }
     });
-
     window.addEventListener("keyup", function(e) {
         if (e.which === Keycode.LEFT || e.which === Keycode.RIGHT || e.which === Keycode.UP || e.which === Keycode.DOWN) {
             keyboard.x = camera.position.x;
             keyboard.z = camera.position.z;
             room.send('position', keyboard);
         }
+    });
+
+    // Mouse press, release, move -> user character look around
+    const newRotation : Coordinate = {x: 0, y: 0, z: 0};
+    window.addEventListener("pointerup", function(e) {
+        console.log("up");
+        newRotation.x = camera.rotation.x;
+        newRotation.y = camera.rotation.y;
+        newRotation.z = camera.rotation.z;
+        room.send('rotation', newRotation);
+    });
+    window.addEventListener("pointermove", function(e) {
+        newRotation.x = camera.rotation.x;
+        newRotation.y = camera.rotation.y;
+        newRotation.z = camera.rotation.z;
+        room.send('rotation', newRotation);
+    });
+    window.addEventListener("pointerdown", function(e) {
+        console.log("down");
+        newRotation.x = camera.rotation.x;
+        newRotation.y = camera.rotation.y;
+        newRotation.z = camera.rotation.z;
+        room.send('rotation', newRotation);
     });
 
     // Resize the engine on window resize
