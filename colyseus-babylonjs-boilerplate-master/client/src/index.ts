@@ -8,6 +8,7 @@ import { StateHandler } from "../../server/src/rooms/StateHandler";
 import { Coordinate } from "../../server/src/entities/Player";
 import { WhiteBoard } from "./meshes/whiteboard";
 import { Piano } from "./meshes/piano";
+import { Drum } from "./meshes/drum";
 import { Room } from "./meshes/room";
 import { Rotate2dBlock } from "babylonjs";
 
@@ -21,6 +22,7 @@ scene.gravity = new BABYLON.Vector3(0, -1, 0);
 scene.collisionsEnabled = true;
 
 const PLAYER_HEIGHT = 15;
+const STARTING_NOTE = 36;
 
 var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
 light.intensity = 0.7;
@@ -41,6 +43,7 @@ var exbox = BABYLON.Mesh.CreateBox("box", 2, scene);
 var Soundfont = require('soundfont-player');
 var audioContext = new AudioContext();  
 var pianoSample1, pianoSample2;
+var drum;
 
 // Colyseus / Join Room
 client.joinOrCreate<StateHandler>("game").then(room => {
@@ -60,6 +63,9 @@ client.joinOrCreate<StateHandler>("game").then(room => {
             var virtualRoom = new Room(scene); 
             pianoSample1 = new Piano(piano1x, piano1y, piano1z, scene, "celesta", room, camera);
             pianoSample2 = new Piano(piano2x, piano2y, piano2z, scene, "acoustic_grand_piano", room, camera);
+
+            drum = new Drum(30, 16, 0, scene, room, camera);
+
             var whiteboard1 = new WhiteBoard(16, 10, piano1x, piano1y,piano1z, scene, pianoSample1.pianoFrame.Mesh, camera, canvas);
             player.position.y = 2 * PLAYER_HEIGHT;
             camera.position.set(player.position.x, player.position.y, player.position.z);
@@ -97,7 +103,7 @@ client.joinOrCreate<StateHandler>("game").then(room => {
                             if (keys[i].ispressed) {
                                 console.log(String(i) + " of piano is pressed");
                                 Soundfont.instrument(audioContext, 'acoustic_grand_piano', { gain: 2 }).then(function (piano) {
-                                    piano.play(50 + i).stop(audioContext.currentTime + 0.5);
+                                    piano.play(STARTING_NOTE + i).stop(audioContext.currentTime + 0.5);
                                 });
                                 pianoSample2.keys[i].material.emissiveColor = BABYLON.Color3.Red();
                             }
@@ -116,7 +122,7 @@ client.joinOrCreate<StateHandler>("game").then(room => {
                             if (keys[i].ispressed2) {
                                 console.log(String(i) + " of celesta is pressed");
                                 Soundfont.instrument(audioContext, 'celesta', { gain: 2 }).then(function (piano) {
-                                    piano.play(50 + i).stop(audioContext.currentTime + 0.5);
+                                    piano.play(STARTING_NOTE + i).stop(audioContext.currentTime + 0.5);
                                 });
                                 pianoSample1.keys[i].material.emissiveColor = BABYLON.Color3.Red();
                             }

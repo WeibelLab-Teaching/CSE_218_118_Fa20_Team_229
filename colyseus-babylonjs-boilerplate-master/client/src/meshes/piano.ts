@@ -10,7 +10,7 @@ export class PianoKey {
                         if (triggerKey == changeKey || (instrument == 'acoustic_grand_piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
                             Soundfont.instrument(audioContext, instrument, { gain: 2 }).then(function (piano) {
                                 console.log("You played " + instrument);
-                                piano.play(50 + keyNumber).stop(audioContext.currentTime + 0.5);
+                                piano.play(startingNote + keyNumber).stop(audioContext.currentTime + 0.5);
                             });
                         }
                     })
