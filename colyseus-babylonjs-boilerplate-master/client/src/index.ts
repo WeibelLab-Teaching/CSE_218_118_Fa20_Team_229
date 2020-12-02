@@ -59,7 +59,7 @@ client.joinOrCreate<StateHandler>("game").then(room => {
             const piano2x = 25, piano2y = 16, piano2z = -35;
             var virtualRoom = new Room(scene); 
             pianoSample1 = new Piano(piano1x, piano1y, piano1z, scene, "celesta", room, camera);
-            pianoSample2 = new Piano(piano2x, piano2y, piano2z, scene, "piano", room, camera);
+            pianoSample2 = new Piano(piano2x, piano2y, piano2z, scene, "acoustic_grand_piano", room, camera);
             var whiteboard1 = new WhiteBoard(16, 10, piano1x, piano1y,piano1z, scene, pianoSample1.pianoFrame.Mesh, camera, canvas);
             player.position.y = 2 * PLAYER_HEIGHT;
             camera.position.set(player.position.x, player.position.y, player.position.z);
@@ -115,7 +115,7 @@ client.joinOrCreate<StateHandler>("game").then(room => {
                         if (keys[i].pressedBy2 != room.sessionId) {
                             if (keys[i].ispressed2) {
                                 console.log(String(i) + " of celesta is pressed");
-                                Soundfont.instrument(audioContext, 'acoustic_grand_piano', { gain: 2 }).then(function (piano) {
+                                Soundfont.instrument(audioContext, 'celesta', { gain: 2 }).then(function (piano) {
                                     piano.play(50 + i).stop(audioContext.currentTime + 0.5);
                                 });
                                 pianoSample1.keys[i].material.emissiveColor = BABYLON.Color3.Red();

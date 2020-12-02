@@ -7,8 +7,9 @@ export class PianoKey {
                     new BABYLON.ExecuteCodeAction(
                     soundTrigger,
                     function () {
-                        if (triggerKey == changeKey || (instrument == 'piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
-                            Soundfont.instrument(audioContext, 'acoustic_grand_piano', { gain: 2 }).then(function (piano) {
+                        if (triggerKey == changeKey || (instrument == 'acoustic_grand_piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
+                            Soundfont.instrument(audioContext, instrument, { gain: 2 }).then(function (piano) {
+                                console.log("You played " + instrument);
                                 piano.play(50 + keyNumber).stop(audioContext.currentTime + 0.5);
                             });
                         }
@@ -20,7 +21,7 @@ export class PianoKey {
             new BABYLON.ExecuteCodeAction(
                 pressTrigger,
                 function () {
-                    if (triggerKey == changeKey || (instrument == 'piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
+                    if (triggerKey == changeKey || (instrument == 'acoustic_grand_piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
                         changeKey.material.emissiveColor = pressColor;
                         message.instrument = instrument;
                         message.ispressed = true;
@@ -34,7 +35,7 @@ export class PianoKey {
             new BABYLON.ExecuteCodeAction(
                 upTrigger,
                 function () {
-                    if (triggerKey == changeKey || (instrument == 'piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
+                    if (triggerKey == changeKey || (instrument == 'acoustic_grand_piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
                         changeKey.material.emissiveColor = originalColor;
                         message.instrument = instrument;
                         message.ispressed = false;
