@@ -1,0 +1,5 @@
+{
+    "scripts": {
+        "postinstall": "cd colyseus-babylonjs-boilerplate-master && npm install"
+    }
+}
