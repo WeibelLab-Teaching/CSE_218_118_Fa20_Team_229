@@ -32,6 +32,12 @@ export class GameRoom extends Room<StateHandler> {
                 } else if (message.instrument == 'koto') {
                     keys[message.noteNumber].ispressed2 = Boolean(message.ispressed);
                     keys[message.noteNumber].pressedBy2 = message.pressedBy;
+                } else if (message.instrument == 'gunshot') {
+                    keys[message.noteNumber].ispressed3 = Boolean(message.ispressed);
+                    keys[message.noteNumber].pressedBy3 = message.pressedBy;
+                } else if (message.instrument == 'woodblock') {
+                    keys[message.noteNumber].ispressed4 = Boolean(message.ispressed);
+                    keys[message.noteNumber].pressedBy4 = message.pressedBy;
                 }
             });
         });
