@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # BabylonJS + Colyseus: Multiplayer Boilerplate
 
 This is a project setup to use BabylonJS 4.x with Colyseus 0.14.x.
@@ -72,8 +71,3 @@ It will spawn a web socket server, listening on [ws://localhost:2657](ws://local
 ## License
 
 Apache License 2.0
-=======
-# CSE_218_118_Fa20_Team_229
-You can run "python3 -m http.server" under this folder in your terminal. 
-After that, you can use http://localhost:8000/clickSound.html to visit this html file.
->>>>>>> 2202305... Git got messed up so I had to reinitialize and push again.

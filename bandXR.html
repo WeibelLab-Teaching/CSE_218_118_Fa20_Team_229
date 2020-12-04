@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>BandXR</title>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+
+        <script src="https://preview.babylonjs.com/babylon.js"></script>
+        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+        <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+
+        <script src="./midiJS/inc/shim/Base64.js" type="text/javascript"></script>
+        <script src="./midiJS/inc/shim/Base64binary.js" type="text/javascript"></script>
+        <script src="./midiJS/inc/shim/WebAudioAPI.js" type="text/javascript"></script>
+        <!-- midi.js package -->
+        <script src="./midiJS/js/midi/audioDetect.js" type="text/javascript"></script>
+        <script src="./midiJS/js/midi/gm.js" type="text/javascript"></script>
+        <script src="./midiJS/js/midi/loader.js" type="text/javascript"></script>
+        <script src="./midiJS/js/midi/plugin.audiotag.js" type="text/javascript"></script>
+        <script src="./midiJS/js/midi/plugin.webaudio.js" type="text/javascript"></script>
+        <script src="./midiJS/js/midi/plugin.webmidi.js" type="text/javascript"></script>
+        <!-- utils -->
+        <script src="../js/util/dom_request_xhr.js" type="text/javascript"></script>
+        <script src="../js/util/dom_request_script.js" type="text/javascript"></script>
+    </head>
+
+   <body>
+
+    <canvas id="renderCanvas" touch-action="none"></canvas> <!-- touch-action="none" for best results from PEP -->
+
+    <script>
+        var canvas = document.getElementById("renderCanvas"); // Get the canvas element
+        var engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
+        var createScene = function () {
+            var scene = new BABYLON.Scene(engine);
+            // var camera = new BABYLON.ArcRotateCamera("Camera", 3 * Math.PI / 2, Math.PI / 8, 50, BABYLON.Vector3.Zero(), scene);
+
+            scene.gravity = new BABYLON.Vector3(0, -1, 0);
+            scene.collisionsEnabled = true;
+            
+            const PLAYER_HEIGHT = 15;
+            var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 2*PLAYER_HEIGHT, 0), scene);
+            camera.attachControl(canvas, true);
+
+            camera.applyGravity = true; 
+            camera.checkCollisions = true;
+
+            // Player camera
+            camera.setTarget(new BABYLON.Vector3(0, PLAYER_HEIGHT, 150)); // Look at the north wall
+            camera.ellipsoid = new BABYLON.Vector3(1, PLAYER_HEIGHT, 1);
+
+            // // Move camera using keyboard
+            // camera.keysUp.push(37); // w
+            // camera.keysLeft.push(38); // a
+            // camera.keysDown.push(39); // s
+            // camera.keysRight.push(40); // d
+            camera.speed = 1.5;
+
+            scene.actionManager = new BABYLON.ActionManager(scene);
+
+            class pianoKey {
+                box;
+                setKeyAction(triggerKey, changeKey, soundTrigger, pressTrigger, upTrigger, pressColor, originalColor, keyNumber) {
+                    triggerKey.actionManager.registerAction(
+                                new BABYLON.ExecuteCodeAction(
+                                soundTrigger,
+                                function () { 
+                                    // sound.play(); 
+                                    MIDI.loadPlugin({
+                                        soundfontUrl: "./midiJS/soundfont/",
+                                        instrument: "acoustic_grand_piano",
+                                        onprogress: function(state, progress) {
+                                            console.log(state, progress);
+                                        },
+                                        onsuccess: function() {
+                                            var delay = 0; // play one note every quarter second
+                                            var note = 50+keyNumber; // the MIDI note
+                                            var velocity = 127; // how hard the note hits
+                                            // play the note
+                                            MIDI.setVolume(0, 127);
+                                            MIDI.noteOn(0, note, velocity, delay);
+                                            MIDI.noteOff(0, note, delay + 0.75);
+                                        }
+	                                });
+                                    // console.log("click!"); 
+                                })
+                    );
+                    triggerKey.actionManager.registerAction(new BABYLON.SetValueAction(
+                                pressTrigger, 
+                                changeKey.material, 
+                                "emissiveColor", 
+                                pressColor
+                    ));
+                    triggerKey.actionManager.registerAction(new BABYLON.SetValueAction(
+                                upTrigger, 
+                                changeKey.material, 
+                                "emissiveColor", 
+                                originalColor
+                    ));
+                }
+                constructor(scene, originalColor, pressColor, x, y, z, h, w, d, keyNumber) {
+                    this.box = BABYLON.MeshBuilder.CreateBox("box", {height: h, width: w, depth: d}, scene);
+                    this.box.position = new BABYLON.Vector3(x, y, z);
+                    var mat = new BABYLON.StandardMaterial("ground", scene);
+                    mat.diffuseColor = new BABYLON.Color3.White();
+                    mat.specularColor = new BABYLON.Color3.White();
+                    mat.emissiveColor = originalColor;
+                    this.box.material = mat;
+
+                    this.box.actionManager = new BABYLON.ActionManager(scene);
+                    var keyboard = ['a', 's', 'd', 'f', 'g','h','j','k','l','q','w','e','r','t','y','u','i','o','p','1','2','3','4','5','6','7','8','9','0','z','x','c','v','b','n','m',',','.','/']
+                    this.setKeyAction(this.box, this.box, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickDownTrigger, BABYLON.ActionManager.OnPickUpTrigger, pressColor, originalColor, keyNumber);
+                    if(keyNumber < keyboard.length) {
+                        this.setKeyAction(scene, this.box, { trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: keyboard[keyNumber] }, 
+                        { trigger: BABYLON.ActionManager.OnKeyDownTrigger, parameter: keyboard[keyNumber] }, { trigger: BABYLON.ActionManager.OnKeyUpTrigger, parameter: keyboard[keyNumber] }, pressColor, originalColor, keyNumber);
+                    }
+                }
+            }
+
+            camera.attachControl(canvas, true);
+
+            // camera.lowerRadiusLimit = 6;
+            // camera.upperRadiusLimit = 20;
+
+            // camera.useAutoRotationBehavior = true;
+
+            class piano {
+                pianoFrame;
+                keys = [];
+                constructor(x, y, z, scene) {
+                    this.pianoFrame = BABYLON.SceneLoader.ImportMesh("", "", "./untitled.obj", scene, function (newMeshes) {
+                        // Set the target of the camera to the first imported mesh
+                        for(var id in newMeshes) {
+                            var mesh = newMeshes[id];
+                            var mat = new BABYLON.StandardMaterial("piano", scene);
+                            // mat.diffuseColor = new BABYLON.Color3.White();
+                            // mat.specularColor = new BABYLON.Color3.White();
+                            // mat.emissiveColor = new BABYLON.Color3.Green();
+                            mesh.material = mat;
+                            mesh.scaling = new BABYLON.Vector3(2,4,2);
+                            mesh.position = new BABYLON.Vector3(x, y, z);
+                        }
+                    });
+                    var pianoStand = BABYLON.SceneLoader.ImportMesh("", "", "./stand.obj", scene, function (newMeshes) {
+                        // Set the target of the camera to the first imported mesh
+                        for(var id in newMeshes) {
+                            var mesh = newMeshes[id];
+                            var mat = new BABYLON.StandardMaterial("stand", scene);
+                            // mat.diffuseColor = new BABYLON.Color3.White();
+                            // mat.specularColor = new BABYLON.Color3.White();
+                            // mat.emissiveColor = new BABYLON.Color3.Green();
+                            mesh.material = mat;
+                            mesh.scaling = new BABYLON.Vector3(2,2,2);
+                            mesh.position = new BABYLON.Vector3(x, y, z);
+                        }
+                    });
+                    
+                    
+                    var keyNumber = 0;
+                    for(var i = -13.5; i <= 13.5; i++) {
+                        if([1,2,4,5,6].includes((i+13.5) % 7)) {
+                            this.keys.push(new pianoKey(scene, BABYLON.Color3.Black(), BABYLON.Color3.Red(), 2.9 + x, 1.7 + y, i + z - 0.5, 0.5, 5, 0.6, keyNumber++).box);
+                        }
+                        this.keys.push(new pianoKey(scene, BABYLON.Color3.Blue(), BABYLON.Color3.Red(), 3.4 + x, 1 + y, i + z, 1, 6, 0.9, keyNumber++).box);
+                    }
+
+                }
+            }
+
+            var pianoSample = new piano(0, 16, 0, scene);
+
+            const ROOM_X = 150;
+            const ROOM_Y = 40;
+            const ROOM_Z = 150;
+            
+            var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+            //var light = new BABYLON.PointLight("hemi", new BABYLON.Vector3(50, 0, 0), scene);
+            // light.diffuse = BABYLON.Color3.Green();  
+            
+            
+            light.groundColor = new BABYLON.Color3(1, 1, 1);
+            light.intensity = 0.7;
+
+            /* Boundaries */
+            var ground = BABYLON.MeshBuilder.CreateGround("ground", 
+                    {width: ROOM_Z + 10, height: ROOM_X + 10}, scene);
+            ground.checkCollisions = true;
+
+            var wall_N = BABYLON.MeshBuilder.CreatePlane("myPlane", 
+                {width: ROOM_Z + 10, height: ROOM_Y + 10, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
+            wall_N.position.y = ROOM_Y / 2;
+            wall_N.position.z = ROOM_X / 2;
+            wall_N.checkCollisions = true;
+
+            var wall_S = BABYLON.MeshBuilder.CreatePlane("myPlane", 
+                {width: ROOM_Z + 10, height: ROOM_Y + 10, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
+            wall_S.position.y = ROOM_Y / 2;
+            wall_S.position.z = -ROOM_X / 2;
+            wall_S.checkCollisions = true;
+
+            var wall_W = BABYLON.MeshBuilder.CreatePlane("myPlane", 
+                {width: ROOM_X + 10, height: ROOM_Y + 10, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
+            wall_W.position.y = ROOM_Y / 2;
+            wall_W.position.x = -ROOM_Z / 2;
+            wall_W.rotate(BABYLON.Axis.Y, Math.PI/2, BABYLON.Space.WORLD);
+            wall_W.checkCollisions = true;
+
+            var wall_E = BABYLON.MeshBuilder.CreatePlane("myPlane", 
+                {width: ROOM_X + 10, height: ROOM_Y + 10, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
+            wall_E.position.y = ROOM_Y / 2;
+            wall_E.position.x = ROOM_Z / 2;
+            wall_E.rotate(BABYLON.Axis.Y, Math.PI/2, BABYLON.Space.WORLD);
+            wall_E.checkCollisions = true;
+
+            var ceiling = BABYLON.MeshBuilder.CreatePlane("myPlane", 
+                {width: ROOM_Z, height: ROOM_X, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
+            ceiling.position.y = ROOM_Y;
+            ceiling.rotate(BABYLON.Axis.X, Math.PI/2, BABYLON.Space.WORLD);
+            // ceiling.checkCollisions = true;
+
+            //----------------whiteboard----------------------
+            var white_board = BABYLON.MeshBuilder.CreatePlane("whiteboard",         
+                {width: (ROOM_X + 10)/ 10, height: (ROOM_Y + 10)/ 5, subdivisions: 25}, scene);    
+            white_board.parent = pianoSample.pianoFrame.Mesh;
+            white_board.position.x = ROOM_X / 5 - 35;    
+            white_board.position.y = 25;
+            white_board.position.z = 0;
+            white_board.rotate(BABYLON.Axis.Y,  Math.PI * 1.5, BABYLON.Space.WORLD);
+            white_board.rotate(BABYLON.Axis.Z,  Math.PI * 0.2, BABYLON.Space.WORLD);
+            white_board.checkCollisions = true;
+            
+            var board_mat = new BABYLON.StandardMaterial("sheet music", scene);
+            var texture = new BABYLON.DynamicTexture("dynamicTexture", 512, scene);
+            board_mat.diffuseTexture = texture;
+            white_board.material = board_mat;
+            var font = "bold 30px monospace";
+            texture.drawText("Upload you sheet music here", 20, 45, font, "grey", "white", true, true);
+            var context = texture.getContext();
+            var size = texture.getSize();
+
+            white_board.actionManager = new BABYLON.ActionManager(scene);
+            
+            
+            white_board.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction (
+                    {
+                        trigger: BABYLON.ActionManager.OnDoublePickTrigger
+                    },
+                    function() {
+                        var x;
+                        var pdf = prompt("Please enter your sheet music URL");
+                        if (pdf!=null){
+                            console.log("pdf not empty");
+                            //board_mat.diffuseTexture = new BABYLON.Texture(pdf, scene);
+                            
+                            var img = new Image();
+                            img.crossOrigin = "anonymous";
+                            img.src = pdf;
+                            img.onload = function() {
+                                console.log(img.width + " " + img.height + " " + white_board.width);
+                                context.drawImage(this, 0, 0, img.width, img.height, 0, 0, 520, 480);
+                                texture.update();
+                            }
+                            //board_mat.diffuseTexture = new BABYLON.Texture(        
+                            //    "https://i.imgur.com/AyZgq.png", scene);
+                        }
+                    }
+                )
+            );
+
+            var stable = false;
+            white_board.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction (
+                    {
+                        trigger: BABYLON.ActionManager.OnPickTrigger
+                    },
+                    function() {
+                        stable = true;
+                        console.log(camera.angularSensibility);
+                        camera.speed = 0;
+                        camera.angularSensibility = 10000000;
+                    }
+                )
+            )
+            .then(
+                new BABYLON.ExecuteCodeAction (
+                    {
+                        trigger: BABYLON.ActionManager.OnPickTrigger
+                    },
+                    function() {
+                        stable = false;
+                        camera.speed = 1.5;
+                        camera.angularSensibility = 2000;
+                    }
+                )
+            );
+            
+            
+            var draw = false;
+            var onPointerDown = function (eyt) {
+                draw = true;
+            };
+            var onPointerUp = function (eyt) {
+                draw = false;
+            }
+            var onPointerMove = function (eyt) {
+                if (draw && stable) {
+                    var pickResult = scene.pick(scene.pointerX, scene.pointerY);		
+                    var texcoords = pickResult.getTextureCoordinates();
+                    
+                    var centerX = texcoords.x * size.width;
+                    var centerY = size.height - texcoords.y * size.height;
+                    var radius = 1;
+
+                    // draw circle
+                    context.beginPath();
+                    context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+                    context.fillStyle = 'red';
+                    context.fill();
+                    context.lineWidth = 4;
+                    context.strokeStyle = 'red';
+                    context.stroke();
+
+                    texture.update(true);
+                }
+            };
+            var content = white_board.content;
+            canvas.addEventListener("pointerdown", onPointerDown, false);
+            canvas.addEventListener("pointerup", onPointerUp, false);
+            canvas.addEventListener("pointermove", onPointerMove, false);
+            
+
+            ////////////////whiteboard///////////////////////////
+
+            /* Textures */
+            var ground_mat = new BABYLON.StandardMaterial("wood floor", scene);
+            ground_mat.diffuseTexture = new BABYLON.Texture(
+                "https://i.imgur.com/wUGRD2s.png", scene);
+            
+            var window_mat = new BABYLON.StandardMaterial("window wall", scene);
+            window_mat.diffuseTexture = new BABYLON.Texture(
+                "https://i.imgur.com/oqodmI9.jpeg", scene);
+
+            var wall_mat = new BABYLON.StandardMaterial("chair wall", scene);
+            wall_mat.diffuseTexture = new BABYLON.Texture(
+                "https://i.imgur.com/MO034Uh.png", scene);
+
+            var door_mat = new BABYLON.StandardMaterial("door wall", scene);
+            door_mat.diffuseTexture = new BABYLON.Texture(
+                "https://i.imgur.com/m6WMVCi.jpg", scene);
+
+            var ceiling_mat = new BABYLON.StandardMaterial("ceiling", scene);
+            ceiling_mat.diffuseTexture = new BABYLON.Texture(
+                "https://i.imgur.com/zVW0Lmk.png", scene);
+
+
+            /* Boundary Texture Selection */
+            ground.material = ground_mat;
+            wall_N.material = window_mat;
+            wall_S.material = window_mat;
+            wall_W.material = wall_mat;
+            wall_E.material = door_mat;
+            ceiling.material = ceiling_mat;
+
+            /* Objects */
+            // None at the moment
+
+
+            return scene;
+        }
+        var scene = createScene(); //Call the createScene function
+
+        // Register a render loop to repeatedly render the scene
+        engine.runRenderLoop(function () {
+                scene.render();
+        });
+
+        // Watch for browser/canvas resize events
+        window.addEventListener("resize", function () {
+                engine.resize();
+        });
+    </script>
+
+   </body>
+
+</html>
