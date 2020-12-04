@@ -7,9 +7,16 @@ export class PianoKey {
                     new BABYLON.ExecuteCodeAction(
                     soundTrigger,
                     function () {
-                        if (triggerKey == changeKey || (instrument == 'piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
-                            Soundfont.instrument(audioContext, 'acoustic_grand_piano', { gain: 2 }).then(function (piano) {
-                                piano.play(50 + keyNumber).stop(audioContext.currentTime + 0.5);
+                        var dist = Math.sqrt(
+                            Math.pow(changeKey.position.x - camera.position.x, 2) 
+                            + Math.pow(changeKey.position.z - camera.position.z, 2));
+
+                        console.log("dist away from " + instrument + ": " + dist);
+
+                        if (dist <= 30) {
+                            Soundfont.instrument(audioContext, instrument, { gain: 2 }).then(function (piano) {
+                                console.log("You played " + instrument);
+                                piano.play(startingNote + keyNumber).stop(audioContext.currentTime + 0.5);
                             });
                         }
                     })
@@ -20,7 +27,11 @@ export class PianoKey {
             new BABYLON.ExecuteCodeAction(
                 pressTrigger,
                 function () {
-                    if (triggerKey == changeKey || (instrument == 'piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
+                    var dist = Math.sqrt(
+                        Math.pow(changeKey.position.x - camera.position.x, 2) 
+                        + Math.pow(changeKey.position.z - camera.position.z, 2));
+                        
+                    if (dist <= 30) {
                         changeKey.material.emissiveColor = pressColor;
                         message.instrument = instrument;
                         message.ispressed = true;
@@ -34,7 +45,11 @@ export class PianoKey {
             new BABYLON.ExecuteCodeAction(
                 upTrigger,
                 function () {
-                    if (triggerKey == changeKey || (instrument == 'piano' && camera.position.z <= 0) || (instrument == 'celesta' && camera.position.z > 0)) {
+                    var dist = Math.sqrt(
+                        Math.pow(changeKey.position.x - camera.position.x, 2) 
+                        + Math.pow(changeKey.position.z - camera.position.z, 2));
+                            
+                    if (dist <= 30) {
                         changeKey.material.emissiveColor = originalColor;
                         message.instrument = instrument;
                         message.ispressed = false;
