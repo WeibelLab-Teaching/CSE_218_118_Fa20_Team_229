@@ -128,8 +128,8 @@ client.joinOrCreate<StateHandler>("game").then(room => {
                             }
                             else {
                                 if([1,3,6,8,10].includes(i % 12)) {
-                                    pianoSample1.keys[i].material.diffuseColor = BABYLON.Color3.Black();
-                                } else pianoSample1.keys[i].material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+                                    pianoSample1.keys[i].material.emissiveColor = BABYLON.Color3.Black();
+                                } else pianoSample1.keys[i].material.emissiveColor = new BABYLON.Color3(0.8, 0.8, 0.8);
                                 console.log(String(i) + " of koto is released!");
                             }
                         }
