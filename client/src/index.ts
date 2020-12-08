@@ -8,6 +8,7 @@ import { StateHandler } from "../../server/src/rooms/StateHandler";
 import { Coordinate } from "../../server/src/entities/Player";
 import { WhiteBoard } from "./meshes/whiteboard";
 import { Piano } from "./meshes/piano";
+import { Drum } from "./meshes/drum";
 import { Room } from "./meshes/room";
 import { Rotate2dBlock } from "babylonjs";
 
@@ -21,6 +22,7 @@ scene.gravity = new BABYLON.Vector3(0, -1, 0);
 scene.collisionsEnabled = true;
 
 const PLAYER_HEIGHT = 15;
+const STARTING_NOTE = 36;
 
 var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
 light.intensity = 0.7;
@@ -41,6 +43,7 @@ var exbox = BABYLON.Mesh.CreateBox("box", 2, scene);
 var Soundfont = require('soundfont-player');
 var audioContext = new AudioContext();  
 var pianoSample1, pianoSample2;
+var drum;
 
 // Colyseus / Join Room
 client.joinOrCreate<StateHandler>("game").then(room => {
@@ -49,7 +52,7 @@ client.joinOrCreate<StateHandler>("game").then(room => {
     const keyState = [];
 
     for(let i=0;i<48;i++) {
-        keyState.push([false, false]);
+        keyState.push([false, false, false, false, false]);
     }
 
     room.state.players.onAdd = function(player, key) {
@@ -58,8 +61,11 @@ client.joinOrCreate<StateHandler>("game").then(room => {
             const piano1x = 25, piano1y = 16, piano1z = 35;
             const piano2x = 25, piano2y = 16, piano2z = -35;
             var virtualRoom = new Room(scene); 
-            pianoSample1 = new Piano(piano1x, piano1y, piano1z, scene, "celesta", room, camera);
-            pianoSample2 = new Piano(piano2x, piano2y, piano2z, scene, "piano", room, camera);
+            pianoSample1 = new Piano(piano1x, piano1y, piano1z, scene, "koto", room, camera);
+            pianoSample2 = new Piano(piano2x, piano2y, piano2z, scene, "acoustic_grand_piano", room, camera);
+
+            drum = new Drum(30, 16, 0, scene, room, camera);
+
             var whiteboard1 = new WhiteBoard(16, 10, piano1x, piano1y,piano1z, scene, pianoSample1.pianoFrame.Mesh, camera, canvas);
             player.position.y = 2 * PLAYER_HEIGHT;
             camera.position.set(player.position.x, player.position.y, player.position.z);
@@ -97,7 +103,7 @@ client.joinOrCreate<StateHandler>("game").then(room => {
                             if (keys[i].ispressed) {
                                 console.log(String(i) + " of piano is pressed");
                                 Soundfont.instrument(audioContext, 'acoustic_grand_piano', { gain: 2 }).then(function (piano) {
-                                    piano.play(50 + i).stop(audioContext.currentTime + 0.5);
+                                    piano.play(STARTING_NOTE + i).stop(audioContext.currentTime + 0.5);
                                 });
                                 pianoSample2.keys[i].material.emissiveColor = BABYLON.Color3.Red();
                             }
@@ -110,13 +116,13 @@ client.joinOrCreate<StateHandler>("game").then(room => {
                         }
                         keyState[i][0] = keys[i].ispressed;
                     }
-                    // 1 is celesta
+                    // 1 is koto
                     if (keyState[i][1] != keys[i].ispressed2) {
                         if (keys[i].pressedBy2 != room.sessionId) {
                             if (keys[i].ispressed2) {
-                                console.log(String(i) + " of celesta is pressed");
-                                Soundfont.instrument(audioContext, 'acoustic_grand_piano', { gain: 2 }).then(function (piano) {
-                                    piano.play(50 + i).stop(audioContext.currentTime + 0.5);
+                                console.log(String(i) + " of koto is pressed");
+                                Soundfont.instrument(audioContext, 'koto', { gain: 2 }).then(function (piano) {
+                                    piano.play(STARTING_NOTE + i).stop(audioContext.currentTime + 0.5);
                                 });
                                 pianoSample1.keys[i].material.emissiveColor = BABYLON.Color3.Red();
                             }
@@ -124,11 +130,50 @@ client.joinOrCreate<StateHandler>("game").then(room => {
                                 if([1,3,6,8,10].includes(i % 12)) {
                                     pianoSample1.keys[i].material.emissiveColor = BABYLON.Color3.Black();
                                 } else pianoSample1.keys[i].material.emissiveColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-                                console.log(String(i) + " of celesta is released!");
+                                console.log(String(i) + " of koto is released!");
                             }
                         }
                         keyState[i][1] = keys[i].ispressed2;
                     }
+
+                    // 2 is gunshot (drum head)
+                    if (keyState[i][2] != keys[i].ispressed3) {
+                        if (keys[i].pressedBy3 != room.sessionId) {
+                            if (keys[i].ispressed3) {
+                                console.log("drum head is pressed");
+                                Soundfont.instrument(audioContext, 'gunshot', { gain: 2 }).then(function (drumHead) {
+                                    drumHead.play(70).stop(audioContext.currentTime + 0.05);
+                                });
+                                drum.head.material.diffuseColor = new BABYLON.Color3(1.2, 0.8, 0.8);
+                            }
+                            else {
+                                drum.head.material.diffuseColor = new BABYLON.Color3(1.2, 1.2, 1.1);
+                                console.log("drum head is released!");
+                            }
+                        }
+                        keyState[i][2] = keys[i].ispressed3;
+                    }
+
+                    // 3 is woodblock (drum rim)
+                    if (keyState[i][3] != keys[i].ispressed4) {
+                        if (keys[i].pressedBy4 != room.sessionId) {
+                            if (keys[i].ispressed4) {
+                                console.log("drum rim is pressed");
+                                Soundfont.instrument(audioContext, 'woodblock', { gain: 5 }).then(function (drumHead) {
+                                    drumHead.play(76).stop(audioContext.currentTime + 0.05);
+                                });
+                                drum.rim.material.diffuseColor = new BABYLON.Color3(1.2, 1.2, 1.1);
+                            }
+                            else {
+                                drum.rim.material.diffuseColor = new BABYLON.Color3(1.1, 0.3, 0.3);
+                                console.log("drum head is released!");
+                            }
+                        }
+                        keyState[i][3] = keys[i].ispressed4;
+                    }
+
+                    // More instruments here...
+
                 }
             }
         }

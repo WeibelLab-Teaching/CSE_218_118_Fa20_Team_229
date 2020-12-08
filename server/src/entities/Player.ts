@@ -20,11 +20,18 @@ export class Rotation extends Schema {
 
 export class Key extends Schema {
     @type("number") instrumentId: number = 0;
-    @type("boolean") ispressed: boolean = false;
-    @type("boolean") ispressed2: boolean = false;
+
+    @type("boolean") ispressed: boolean = false; // piano
+    @type("boolean") ispressed2: boolean = false; // koto
+    @type("boolean") ispressed3: boolean = false; // drum head (gunshot)
+    @type("boolean") ispressed4: boolean = false; // drum rim (woodblock)
+    @type("boolean") ispressed5: boolean = false; // metronome (woodblock)
     @type("number") keyNumber: number = 0;
     @type("string") pressedBy: String = "";
     @type("string") pressedBy2: String = "";
+    @type("string") pressedBy3: String = "";
+    @type("string") pressedBy4: String = "";
+    @type("string") pressedBy5: String = "";
     constructor(kN) {
         super();
         this.keyNumber = kN;
