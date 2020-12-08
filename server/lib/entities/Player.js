@@ -48,11 +48,17 @@ class Key extends schema_1.Schema {
     constructor(kN) {
         super();
         this.instrumentId = 0;
-        this.ispressed = false;
-        this.ispressed2 = false;
+        this.ispressed = false; // piano
+        this.ispressed2 = false; // koto
+        this.ispressed3 = false; // drum head (gunshot)
+        this.ispressed4 = false; // drum rim (woodblock)
+        this.ispressed5 = false; // metronome (woodblock)
         this.keyNumber = 0;
         this.pressedBy = "";
         this.pressedBy2 = "";
+        this.pressedBy3 = "";
+        this.pressedBy4 = "";
+        this.pressedBy5 = "";
         this.keyNumber = kN;
     }
 }
@@ -66,6 +72,15 @@ __decorate([
     schema_1.type("boolean")
 ], Key.prototype, "ispressed2", void 0);
 __decorate([
+    schema_1.type("boolean")
+], Key.prototype, "ispressed3", void 0);
+__decorate([
+    schema_1.type("boolean")
+], Key.prototype, "ispressed4", void 0);
+__decorate([
+    schema_1.type("boolean")
+], Key.prototype, "ispressed5", void 0);
+__decorate([
     schema_1.type("number")
 ], Key.prototype, "keyNumber", void 0);
 __decorate([
@@ -74,6 +89,15 @@ __decorate([
 __decorate([
     schema_1.type("string")
 ], Key.prototype, "pressedBy2", void 0);
+__decorate([
+    schema_1.type("string")
+], Key.prototype, "pressedBy3", void 0);
+__decorate([
+    schema_1.type("string")
+], Key.prototype, "pressedBy4", void 0);
+__decorate([
+    schema_1.type("string")
+], Key.prototype, "pressedBy5", void 0);
 exports.Key = Key;
 class Player extends schema_1.Schema {
     constructor() {
