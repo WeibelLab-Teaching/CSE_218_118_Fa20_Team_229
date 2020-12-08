@@ -10,7 +10,7 @@ import { WhiteBoard } from "./meshes/whiteboard";
 import { Piano } from "./meshes/piano";
 import { Drum } from "./meshes/drum";
 import { Room } from "./meshes/room";
-import { Rotate2dBlock } from "babylonjs";
+import { WebXRCamera, WebXRSessionManager } from "babylonjs";
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const engine = new BABYLON.Engine(canvas, true);
@@ -20,6 +20,7 @@ var scene = new BABYLON.Scene(engine);
 scene.actionManager = new BABYLON.ActionManager(scene);
 scene.gravity = new BABYLON.Vector3(0, -1, 0);
 scene.collisionsEnabled = true;
+const xrSessionManager = new WebXRSessionManager(scene);
 
 const PLAYER_HEIGHT = 15;
 const STARTING_NOTE = 36;
@@ -37,6 +38,7 @@ camera.checkCollisions = true;
 camera.setTarget(new BABYLON.Vector3(0, PLAYER_HEIGHT, 150)); // Look at the north wall
 camera.ellipsoid = new BABYLON.Vector3(1, PLAYER_HEIGHT, 1);
 camera.speed = 1.0;
+const xrCamera = new WebXRCamera("nameOfCamera", scene, xrSessionManager);
 
 var exbox = BABYLON.Mesh.CreateBox("box", 2, scene);
 
