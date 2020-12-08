@@ -10,6 +10,7 @@ import { WhiteBoard } from "./meshes/whiteboard";
 import { Piano } from "./meshes/piano";
 import { Drum } from "./meshes/drum";
 import { Room } from "./meshes/room";
+import { User } from "./meshes/user";
 import { Rotate2dBlock } from "babylonjs";
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
@@ -38,8 +39,6 @@ camera.setTarget(new BABYLON.Vector3(0, PLAYER_HEIGHT, 150)); // Look at the nor
 camera.ellipsoid = new BABYLON.Vector3(1, PLAYER_HEIGHT, 1);
 camera.speed = 1.0;
 
-var exbox = BABYLON.Mesh.CreateBox("box", 2, scene);
-
 var Soundfont = require('soundfont-player');
 var audioContext = new AudioContext();  
 var pianoSample1, pianoSample2;
@@ -47,7 +46,7 @@ var drum;
 
 // Colyseus / Join Room
 client.joinOrCreate<StateHandler>("game").then(room => {
-    const playerViews: {[id: string]: BABYLON.Mesh} = {};
+    const playerViews: {[id: string]: User} = {};
 
     const keyState = [];
 
@@ -71,18 +70,18 @@ client.joinOrCreate<StateHandler>("game").then(room => {
             camera.position.set(player.position.x, player.position.y, player.position.z);
         } else {
             // playerViews[key] = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
-            playerViews[key] = BABYLON.Mesh.CreateBox("box", 2, scene);
+            playerViews[key] = new User(scene);
 
             // Move the sphere upward 1/2 its height
             player.position.y = 2*PLAYER_HEIGHT;
-            playerViews[key].position.set(player.position.x, player.position.y, player.position.z);
-            playerViews[key].rotation.set(player.rotation.x, player.rotation.y, player.rotation.z);
+            playerViews[key].setPosition(player.position.x, player.position.y, player.position.z);
+            playerViews[key].setRotation(player.rotation.x, player.rotation.y, player.rotation.z);
             // Update player position based on changes from the server.
             player.position.onChange = () => {
-                playerViews[key].position.set(player.position.x, player.position.y, player.position.z);
+                playerViews[key].setPosition(player.position.x, player.position.y, player.position.z);
             };
             player.rotation.onChange = () => {
-                playerViews[key].rotation.set(player.rotation.x, player.rotation.y, player.rotation.z);
+                playerViews[key].setRotation(player.rotation.x, player.rotation.y, player.rotation.z);
             };
             console.log("here");
 
@@ -180,7 +179,8 @@ client.joinOrCreate<StateHandler>("game").then(room => {
     };
 
     room.state.players.onRemove = function(player, key) {
-        scene.removeMesh(playerViews[key]);
+        // scene.removeMesh(playerViews[key]);
+        playerViews[key].removeMesh(scene);
         delete playerViews[key];
     };
 
