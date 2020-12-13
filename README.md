@@ -13,35 +13,42 @@ neighbors with loud music.
 
 Our features consist of:
 
+**Piano**\
 ![Piano](/images/feature_piano.png)
 * 48-key piano for a total of 4 octaves
 * Potential to change the soundfont of the piano
 * Keys will flash red when pressed on
 
+**Drum**\
 ![Drum](/images/feature_drum.png)
 * Hitting both the head and rim of the drum makes different sounds
 * The head drum will flash red and the rim will flash green when hit
 
-![Whiteboard ](/images/feature_whiteboard.png)
+**Whiteboard**\
+![Whiteboard](/images/feature_whiteboard.png)
 * The user may click on the whiteboard to upload any image for sheet music
 * The user can drag their mouse on the whiteboard to draw or write on it
 
+**Multiuser support**\
 ![Multiuser support](/images/feature_multiuser.png)
 * Up to 16 users can join simultaneously (for now)
 * All users can hear each other play notes in real time
 
+**Modularity**\
 ![Modularity](/images/modularity.png)
 Our application is handled mostly on the client side thus most of our 
 reuseable code is located in the client, such as the room, instruments, 
 and user objects. The server mostly utilizes Player.ts and GameRoom.ts
 to update what is going on in the room.
 
+**Architecture**\
 ![Architecture](/images/architecture.png)
 On the client side, we used babylon.js for the graphics, soundfont-player for its
 musical capability, blender for the 3D models, and Colyseus to send data to the
 server. On the server side, we use Colyseus to process the client requests and
 Node.js as the back-end framework.
 
+**Dataflow**\
 ![Dataflow](/images/dataflow.png)
 The dataflow of BandXR consists of the client sending their position,
 rotation angle, and any note they are playing to the server. The server
@@ -59,8 +66,8 @@ The client folder includes
 * [soundfont](/client/soundfont/) includes all the music sound file for the project.
 * [src](/client/src/) includes all the source code. 
 * [src/index.ts](/client/src/index.ts) is the main source file that will be used to create the scene, the user and all the module. 
-* [src/meshes](/client/meshes) is the folder that containing all the module we write for creating the room including virtual instruments, user character and the room itself. 
-* [src/meshes](/client/src/game/network.ts) includes the network communitation pre-defined by Colyseus. 
+* [src/meshes](/client/src/meshes) is the folder that containing all the module we write for creating the room including virtual instruments, user character and the room itself. 
+* [src/game](/client/src/game/network.ts) includes the network communitation pre-defined by Colyseus. 
 
 The server folder includes 
 * [server/entities](/server/src/entities/) includes class that the server use to describe a user. It also defines the data structure got communicated between the server and the client. 
@@ -75,15 +82,14 @@ To begin with our project, the most important files are listed above. In order t
 6. Recompile the project and run. 
 
 ## Who maintains and contributes to the project
-Team 229
-Hongxiang Jiang, Graduate Student at UC San Diego
-Yucheng Bian, Graduate Student at UC San Diego
-Yuepeng Shen, Graduate Student at UC San Diego
-Brandon Tran, Undergraduate Student at UC San Diego
-
+Team 229  
+Hongxiang Jiang, Graduate Student at UC San Diego  
+Yucheng Bian, Graduate Student at UC San Diego  
+Yuepeng Shen, Graduate Student at UC San Diego  
+Brandon Tran, Undergraduate Student at UC San Diego  
 
 ## Where users can get help with your project
-yus012@ucsd.edu Yuepeng Shen
-h9jiang@ucsd.edu Hongxiang Jiang
-blt005@ucsd.edu Brandon Tran
-y2bian@ucsd.edu Yucheng Bian
+yus012@ucsd.edu Yuepeng Shen  
+h9jiang@ucsd.edu Hongxiang Jiang  
+blt005@ucsd.edu Brandon Tran  
+y2bian@ucsd.edu Yucheng Bian  
