@@ -1,46 +1,49 @@
 export class Room {
+    ROOM_X;
+    ROOM_Y;
+    ROOM_Z;
     constructor(scene) {
-        const ROOM_X = 150;
-        const ROOM_Y = 40;
-        const ROOM_Z = 150;
+        this.ROOM_X = 150;
+        this.ROOM_Y = 40;
+        this.ROOM_Z = 150;
 
         // Our built-in 'ground' shape. Params: name, width, depth, subdivs, scene
         /* Boundaries */
         var ground = BABYLON.MeshBuilder.CreateGround("ground", 
-        {width: ROOM_Z, height: ROOM_X}, scene);
+        {width: this.ROOM_Z, height: this.ROOM_X}, scene);
         ground.checkCollisions = true;
 
         var wall_N = BABYLON.MeshBuilder.CreateBox("myPlane", 
-        {width: ROOM_Z, height: ROOM_Y, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
-        wall_N.position.y = ROOM_Y / 2;
-        wall_N.position.z = ROOM_X / 2;
+        {width: this.ROOM_Z, height: this.ROOM_Y, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
+        wall_N.position.y = this.ROOM_Y / 2;
+        wall_N.position.z = this.ROOM_X / 2;
         wall_N.checkCollisions = true;
 
         var wall_S = BABYLON.MeshBuilder.CreateBox("myPlane", 
-        {width: ROOM_Z, height: ROOM_Y, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
-        wall_S.position.y = ROOM_Y / 2;
-        wall_S.position.z = -ROOM_X / 2;
+        {width: this.ROOM_Z, height: this.ROOM_Y, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
+        wall_S.position.y = this.ROOM_Y / 2;
+        wall_S.position.z = -this.ROOM_X / 2;
         wall_S.checkCollisions = true;
         wall_S.rotate(BABYLON.Axis.Z, Math.PI, BABYLON.Space.WORLD);
 
         var wall_W = BABYLON.MeshBuilder.CreateBox("myPlane", 
-        {width: ROOM_X, height: ROOM_Y, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
-        wall_W.position.y = ROOM_Y / 2;
-        wall_W.position.x = -ROOM_Z / 2;
+        {width: this.ROOM_X, height: this.ROOM_Y, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
+        wall_W.position.y = this.ROOM_Y / 2;
+        wall_W.position.x = -this.ROOM_Z / 2;
         wall_W.rotate(BABYLON.Axis.Y, Math.PI/2, BABYLON.Space.WORLD);
         wall_W.rotate(BABYLON.Axis.X, Math.PI, BABYLON.Space.WORLD);
         wall_W.checkCollisions = true;
 
         var wall_E = BABYLON.MeshBuilder.CreateBox("myPlane", 
-        {width: ROOM_X, height: ROOM_Y, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
-        wall_E.position.y = ROOM_Y / 2;
-        wall_E.position.x = ROOM_Z / 2;
+        {width: this.ROOM_X, height: this.ROOM_Y, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
+        wall_E.position.y = this.ROOM_Y / 2;
+        wall_E.position.x = this.ROOM_Z / 2;
         wall_E.rotate(BABYLON.Axis.Y, Math.PI/2, BABYLON.Space.WORLD);
         wall_E.checkCollisions = true;
 
         var ceiling = BABYLON.MeshBuilder.CreateBox("myPlane", 
-        {width: ROOM_Z, height: ROOM_X, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
-        ceiling.position.y = ROOM_Y;
+        {width: this.ROOM_Z, height: this.ROOM_X, sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene);
+        ceiling.position.y = this.ROOM_Y;
         ceiling.rotate(BABYLON.Axis.X, Math.PI/2, BABYLON.Space.WORLD);
         ceiling.checkCollisions = true;
 

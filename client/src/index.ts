@@ -11,6 +11,7 @@ import { Piano } from "./meshes/piano";
 import { Drum } from "./meshes/drum";
 import { Room } from "./meshes/room";
 import { User } from "./meshes/user";
+import { Instruction } from './meshes/instruction';
 import { Rotate2dBlock } from "babylonjs";
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
@@ -34,7 +35,8 @@ var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 2*PLAYER_H
 camera.attachControl(canvas, true);
 camera.applyGravity = true; 
 camera.checkCollisions = true;
-camera.setTarget(new BABYLON.Vector3(0, PLAYER_HEIGHT, 150)); // Look at the north wall
+camera.position = new BABYLON.Vector3(0, 0, 40);
+camera.setTarget(new BABYLON.Vector3(-150, PLAYER_HEIGHT, 0)); // Look at the west wall
 camera.ellipsoid = new BABYLON.Vector3(2, PLAYER_HEIGHT, 2);
 camera.speed = 1.0;
 
@@ -66,14 +68,18 @@ client.joinOrCreate<StateHandler>("game").then(room => {
 
             var whiteboard1 = new WhiteBoard(16, 10, piano1x, piano1y,piano1z, scene, pianoSample1.pianoFrame.Mesh, camera, canvas);
             var whiteboard2 = new WhiteBoard(16, 10, piano2x, piano2y,piano2z, scene, pianoSample2.pianoFrame.Mesh, camera, canvas);
+            var instruction = new Instruction(48, 30, -virtualRoom.ROOM_Z / 2 + 2, virtualRoom.ROOM_Y / 2, scene);
             player.position.y = 2 * PLAYER_HEIGHT;
+            player.position.z = 40;
             camera.position.set(player.position.x, player.position.y, player.position.z);
+            camera.setTarget(new BABYLON.Vector3(-150, PLAYER_HEIGHT, 40));
         } else {
             // playerViews[key] = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
             playerViews[key] = new User(scene);
 
             // Move the sphere upward 1/2 its height
             player.position.y = 2*PLAYER_HEIGHT;
+            player.position.z = 40;
             playerViews[key].setPosition(player.position.x, player.position.y, player.position.z);
             playerViews[key].setRotation(player.rotation.x, player.rotation.y, player.rotation.z);
             // Update player position based on changes from the server.
