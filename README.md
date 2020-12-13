@@ -1,3 +1,11 @@
+BandXR project demo can be found here [BANDXR](https://bandxr.herokuapp.com/)  
+
+## User Interaction  
+* Use the arrow keys (left, right, up, down) to move your character in the room.  
+* Hold left click and move the mouse to turn the camera.  
+* Use left click to press keys in pianos and drum.  
+* Use keys (a,s,d,f...) to press keys in pianos when you standing right next to the pianos.  
+* Use left click to focus the whiteboard (while focused, you can't move your character or turn around), then hold left click and drag the mouse to draw something. Reclick the white board to stop focusing on the white board.  
 
 ## Why the project is useful
 BandXR is a project allow multiple users to play instruments in a virtual room. This help users stay productive by learning how to play music. Users can entertain themselves during the pandemic without spending money.
