@@ -28,7 +28,6 @@ const STARTING_NOTE = 36;
 var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
 light.intensity = 0.7;
 light.groundColor = new BABYLON.Color3(1, 1, 1);
-light.intensity = 0.7;
 
 // Set camera to follow current player
 var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 2*PLAYER_HEIGHT, 0), scene);
@@ -36,7 +35,7 @@ camera.attachControl(canvas, true);
 camera.applyGravity = true; 
 camera.checkCollisions = true;
 camera.setTarget(new BABYLON.Vector3(0, PLAYER_HEIGHT, 150)); // Look at the north wall
-camera.ellipsoid = new BABYLON.Vector3(1, PLAYER_HEIGHT, 1);
+camera.ellipsoid = new BABYLON.Vector3(2, PLAYER_HEIGHT, 2);
 camera.speed = 1.0;
 
 var Soundfont = require('soundfont-player');
@@ -66,6 +65,7 @@ client.joinOrCreate<StateHandler>("game").then(room => {
             drum = new Drum(30, 16, 0, scene, room, camera);
 
             var whiteboard1 = new WhiteBoard(16, 10, piano1x, piano1y,piano1z, scene, pianoSample1.pianoFrame.Mesh, camera, canvas);
+            var whiteboard2 = new WhiteBoard(16, 10, piano2x, piano2y,piano2z, scene, pianoSample2.pianoFrame.Mesh, camera, canvas);
             player.position.y = 2 * PLAYER_HEIGHT;
             camera.position.set(player.position.x, player.position.y, player.position.z);
         } else {

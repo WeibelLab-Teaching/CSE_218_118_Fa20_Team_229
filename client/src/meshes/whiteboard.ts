@@ -11,7 +11,7 @@ export class WhiteBoard {
                 },
                 function() {
                     var x;
-                    var pdf = prompt("Please enter your sheet music URL");
+                    var pdf = prompt("Please enter your sheet music URL (e.g: https://i.imgur.com/AyZgq.png) :");
                     if (pdf!=null){
                         console.log("pdf not empty");
                         //board_mat.diffuseTexture = new BABYLON.Texture(pdf, scene);
@@ -38,10 +38,18 @@ export class WhiteBoard {
                     trigger: BABYLON.ActionManager.OnPickTrigger
                 },
                 function() {
-                    stable = true;
-                    console.log(camera.angularSensibility);
-                    camera.speed = 0;
-                    camera.angularSensibility = 10000000;
+                    var dist = Math.sqrt(
+                        Math.pow(board.position.x - camera.position.x, 2) 
+                        + Math.pow(board.position.z - camera.position.z, 2));
+
+                    console.log("dist away from whiteboard" + ": " + dist);
+
+                    if (dist <= 30) {
+                        stable = true;
+                        console.log(camera.angularSensibility);
+                        camera.speed = 0;
+                        camera.angularSensibility = 10000000;
+                    }
                 }
             )
         )
@@ -88,7 +96,6 @@ export class WhiteBoard {
             }
         };
         var content = this.whiteBoard.content;
-        //"https://i.imgur.com/AyZgq.png"
         canvas.addEventListener("pointerdown", onPointerDown, false);
         canvas.addEventListener("pointerup", onPointerUp, false);
         canvas.addEventListener("pointermove", onPointerMove, false);
@@ -109,8 +116,8 @@ export class WhiteBoard {
         var texture = new BABYLON.DynamicTexture("dynamicTexture", 512, scene, false);
         board_mat.diffuseTexture = texture;
         this.whiteBoard.material = board_mat;
-        var font = "bold 30px monospace";
-        texture.drawText("Upload you sheet music here", 20, 45, font, "grey", "white", true, true);
+        var font = "bold 15px monospace";
+        texture.drawText("Double click to upload your sheet music.", 20, 45, font, "grey", "white", true, true);
         var context = texture.getContext();
         var size = texture.getSize();
         this.whiteBoard.actionManager = new BABYLON.ActionManager(scene);
